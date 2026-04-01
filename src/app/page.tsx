@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { HomeAboutSection } from "@/components/HomeAboutSection";
 import { HomeHero } from "@/components/HomeHero";
 
 const highlights = [
@@ -57,7 +58,7 @@ export default function Home() {
           <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
             <div>
               <h2 className="font-serif text-3xl font-semibold tracking-tight text-[var(--color-ocean-deep)] sm:text-4xl">
-                Stories &amp; inspiration
+                Stories &amp; Inspiration
               </h2>
               <p className="mt-3 max-w-xl text-[var(--color-muted)]">
                 Soon you&apos;ll browse experiences, destinations, and blog
@@ -96,6 +97,8 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <HomeAboutSection />
 
       <section className="bg-[var(--color-ocean-deep)] py-16 text-center sm:py-20">
         <div className="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8">
