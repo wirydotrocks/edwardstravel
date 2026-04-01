@@ -1,17 +1,21 @@
 @import "tailwindcss";
 
+/*
+  Brand palette: muted blues from the logo globe, dusty red accents (not neon).
+  Tweaks live here so pages using var(--color-*) pick up changes site-wide.
+*/
 :root {
-  --background: #faf8f5;
-  --foreground: #1c2b33;
-  --color-sand: #f5efe6;
-  --color-sand-muted: #ebe4d8;
-  --color-ocean: #2d6a6e;
-  --color-ocean-deep: #1a4548;
-  --color-coral: #c45c48;
-  --color-ink: #243036;
-  --color-muted: #5c6a70;
-  --color-border: #dcd6cc;
-  --color-surface: #fdfcfa;
+  --background: #f4f8fd;
+  --foreground: #1f2d3a;
+  --color-sand: #e8f1fb;
+  --color-sand-muted: #dce9f6;
+  --color-ocean: #5a95c4;
+  --color-ocean-deep: #44729a;
+  --color-coral: #b84848;
+  --color-ink: #243038;
+  --color-muted: #556a7a;
+  --color-border: #c9d9e8;
+  --color-surface: #fcfdff;
 }
 
 @theme inline {

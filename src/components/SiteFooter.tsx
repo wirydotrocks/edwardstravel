@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { mainNav } from "@/lib/nav";
 
@@ -7,9 +8,13 @@ export function SiteFooter() {
       <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-10 md:flex-row md:justify-between">
           <div>
-            <p className="font-serif text-2xl font-semibold text-white">
-              Edwards Travel
-            </p>
+            <Image
+              src="/edwards-travel-logo.png"
+              alt="Edward's Travel"
+              width={280}
+              height={117}
+              className="h-12 w-auto max-w-[220px] opacity-95 sm:h-14 sm:max-w-none"
+            />
             <p className="mt-2 max-w-sm text-sm text-white/75">
               Thoughtfully planned journeys and memorable experiences. Your
               adventure starts with a conversation.

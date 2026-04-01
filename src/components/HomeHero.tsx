@@ -64,19 +64,21 @@ export function HomeHero() {
         </div>
       </div>
 
+      {/* Blue-tinted scrim + center vignette so hero copy stays readable */}
       <div
-        className="absolute inset-0 bg-gradient-to-b from-[var(--color-ocean-deep)]/50 via-black/35 to-[var(--color-ocean-deep)]/78"
+        className="absolute inset-0 bg-gradient-to-b from-[var(--color-ocean-deep)]/60 via-[var(--color-ocean)]/35 to-[var(--color-ocean-deep)]/82"
+        aria-hidden
+      />
+      <div
+        className="absolute inset-0 bg-[radial-gradient(ellipse_95%_80%_at_50%_42%,rgba(12,35,58,0.72)_0%,transparent_62%)]"
         aria-hidden
       />
 
       <div className="relative z-10 mx-auto flex min-h-[100svh] max-w-4xl flex-col items-center justify-center px-4 pb-24 pt-10 text-center sm:px-6 lg:px-8">
-        <p className="text-sm font-medium uppercase tracking-[0.2em] text-white/90">
-          Edwards Travel
-        </p>
-        <h1 className="mt-4 max-w-3xl font-serif text-4xl font-semibold leading-tight tracking-tight text-white drop-shadow-sm sm:text-5xl lg:text-6xl">
+        <h1 className="max-w-3xl font-serif text-4xl font-semibold leading-tight tracking-tight text-white [text-shadow:_0_2px_12px_rgba(0,0,0,0.5),0_4px_24px_rgba(0,0,0,0.28)] sm:text-5xl lg:text-6xl">
           Go farther with a plan that feels effortless.
         </h1>
-        <p className="mt-5 max-w-2xl text-lg text-white/90 drop-shadow-sm">
+        <p className="mt-5 max-w-2xl text-lg text-white [text-shadow:_0_1px_8px_rgba(0,0,0,0.42),0_2px_16px_rgba(0,0,0,0.22)]">
           Discover experiences and destinations worth slowing down for. Tell us
           where you&apos;d like to go, and we&apos;ll help you get there.
         </p>

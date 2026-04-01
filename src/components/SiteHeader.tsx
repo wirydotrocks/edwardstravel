@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useLayoutEffect, useState } from "react";
+import { BrandLogo } from "@/components/BrandLogo";
 import { mainNav } from "@/lib/nav";
 
 const ctaClassName =
@@ -54,22 +55,13 @@ export function SiteHeader() {
     <header
       className={`sticky top-0 z-50 transition-[background-color,border-color,backdrop-filter,box-shadow] duration-300 ${
         transparent
-          ? "border-transparent bg-white/[0.07] shadow-none backdrop-blur-[2px]"
+          ? "border-transparent bg-[var(--color-ocean-deep)]/25 shadow-none backdrop-blur-md supports-[backdrop-filter]:bg-white/10"
           : "border-b border-[var(--color-border)]/80 bg-[var(--color-surface)]/95 shadow-sm backdrop-blur-md"
       }`}
     >
       <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-3 sm:px-6 md:h-16 md:flex-row md:items-center md:justify-between md:gap-6 md:py-0 lg:px-8">
         <div className="flex items-center justify-between gap-3 md:contents md:gap-0">
-          <Link
-            href="/"
-            className={`font-serif text-xl font-semibold tracking-tight transition-colors ${
-              transparent
-                ? "text-white drop-shadow-md"
-                : "text-[var(--color-ocean-deep)]"
-            }`}
-          >
-            Edwards Travel
-          </Link>
+          <BrandLogo overDarkPhoto={transparent} priority />
           <nav
             className="hidden items-center gap-1 md:flex md:flex-1 md:justify-center"
             aria-label="Main navigation"
