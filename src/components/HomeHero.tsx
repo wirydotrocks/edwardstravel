@@ -75,7 +75,10 @@ export function HomeHero() {
       />
 
       <div className="relative z-10 mx-auto flex min-h-[100svh] max-w-4xl flex-col items-center justify-center px-4 pb-24 pt-10 text-center sm:px-6 lg:px-8">
-        <h1 className="max-w-3xl font-serif text-4xl font-semibold leading-tight tracking-tight text-white [text-shadow:_0_2px_12px_rgba(0,0,0,0.5),0_4px_24px_rgba(0,0,0,0.28)] sm:text-5xl lg:text-6xl">
+        <p className="font-serif text-2xl font-semibold tracking-tight text-[var(--color-coral)] [text-shadow:_0_1px_10px_rgba(0,0,0,0.5),0_2px_22px_rgba(0,0,0,0.35)] sm:text-3xl lg:text-4xl">
+          Edward&apos;s Travel
+        </p>
+        <h1 className="mt-5 max-w-3xl font-serif text-4xl font-semibold leading-tight tracking-tight text-white [text-shadow:_0_2px_12px_rgba(0,0,0,0.5),0_4px_24px_rgba(0,0,0,0.28)] sm:text-5xl lg:text-6xl">
           Go farther with a plan that feels effortless.
         </h1>
         <p className="mt-5 max-w-2xl text-lg text-white [text-shadow:_0_1px_8px_rgba(0,0,0,0.42),0_2px_16px_rgba(0,0,0,0.22)]">
