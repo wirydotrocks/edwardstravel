@@ -1,5 +1,5 @@
-import Image from "next/image";
 import Link from "next/link";
+import { HomeHero } from "@/components/HomeHero";
 
 const highlights = [
   {
@@ -19,48 +19,12 @@ const highlights = [
 export default function Home() {
   return (
     <div className="flex flex-1 flex-col">
-      <section className="relative isolate min-h-[min(85vh,52rem)] overflow-hidden">
-        <Image
-          src="https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=1920&q=80"
-          alt=""
-          fill
-          priority
-          className="object-cover"
-          sizes="100vw"
-        />
-        <div
-          className="absolute inset-0 bg-gradient-to-r from-[var(--color-ocean-deep)]/90 via-[var(--color-ocean-deep)]/55 to-transparent"
-          aria-hidden
-        />
-        <div className="relative mx-auto flex min-h-[min(85vh,52rem)] max-w-6xl flex-col justify-end px-4 pb-16 pt-28 sm:px-6 sm:pb-20 lg:px-8 lg:pb-24">
-          <p className="text-sm font-medium uppercase tracking-[0.2em] text-[var(--color-sand)]/90">
-            Edwards Travel
-          </p>
-          <h1 className="mt-4 max-w-xl font-serif text-4xl font-semibold leading-tight tracking-tight text-white sm:text-5xl lg:text-6xl">
-            Go farther with a plan that feels effortless.
-          </h1>
-          <p className="mt-5 max-w-lg text-lg text-white/90">
-            Discover experiences and destinations worth slowing down for. Tell
-            us where you&apos;d like to go, and we&apos;ll help you get there.
-          </p>
-          <div className="mt-10 flex flex-wrap gap-3">
-            <Link
-              href="/contact"
-              className="inline-flex items-center justify-center rounded-full bg-[var(--color-coral)] px-6 py-3 text-sm font-semibold text-white shadow-lg transition hover:brightness-105"
-            >
-              Start your trip today
-            </Link>
-            <Link
-              href="/search-trips"
-              className="inline-flex items-center justify-center rounded-full border-2 border-white/40 bg-white/10 px-6 py-3 text-sm font-semibold text-white backdrop-blur-sm transition hover:bg-white/20"
-            >
-              Search trips
-            </Link>
-          </div>
-        </div>
-      </section>
+      <HomeHero />
 
-      <section className="border-b border-[var(--color-border)] bg-[var(--color-surface)] py-16 sm:py-20">
+      <section
+        id="why-travel"
+        className="border-b border-[var(--color-border)] bg-[var(--color-surface)] py-16 sm:py-20"
+      >
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <h2 className="font-serif text-3xl font-semibold tracking-tight text-[var(--color-ocean-deep)] sm:text-4xl">
             Why travel with us
