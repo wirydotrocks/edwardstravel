@@ -4,9 +4,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-/** Scenic alpine lake — Unsplash */
+/** Hero background — set URL here (local: "/file.jpg" in /public, or allowed remote host in next.config.ts) */
 const HERO_IMAGE =
-  "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=2400&q=85";
+  "https://plus.unsplash.com/premium_photo-1661963047742-dabc5a735357?q=80&w=2340&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
 
 export function HomeHero() {
   const [parallaxY, setParallaxY] = useState(0);
