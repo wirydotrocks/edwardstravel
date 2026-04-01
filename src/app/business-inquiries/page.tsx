@@ -1,31 +1,29 @@
 import type { Metadata } from "next";
-import { ContactForm } from "./ContactForm";
+import { BusinessInquiriesForm } from "./BusinessInquiriesForm";
 
 export const metadata: Metadata = {
-  title: "Contact",
+  title: "Business Inquiries",
   description:
-    "Plan your trip with Edwards Travel — share destinations, timing, and travel style.",
+    "Contact Edwards Travel for partnerships, corporate travel, press, and other business matters.",
 };
 
-export default function ContactPage() {
+export default function BusinessInquiriesPage() {
   return (
     <main className="mx-auto max-w-6xl flex-1 px-4 py-14 sm:px-6 lg:px-8">
       <h1 className="font-serif text-4xl font-semibold text-[var(--color-ocean-deep)]">
-        Plan your trip
+        Business inquiries
       </h1>
       <p className="mt-4 max-w-2xl text-[var(--color-muted)]">
-        Tell us about your travel plans—we&apos;ll open a pre-filled email so
-        you can send it from your own address. For business or press requests,
-        use{" "}
+        Planning a personal trip? Use{" "}
         <a
-          href="/business-inquiries"
+          href="/contact"
           className="font-medium text-[var(--color-ocean)] underline-offset-2 hover:underline"
         >
-          Business inquiries
+          Contact
         </a>{" "}
-        instead.
+        instead. This form is for organizations and business-related requests.
       </p>
-      <ContactForm />
+      <BusinessInquiriesForm />
     </main>
   );
 }

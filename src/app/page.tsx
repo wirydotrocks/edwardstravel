@@ -4,7 +4,7 @@ import Link from "next/link";
 const highlights = [
   {
     title: "Curated experiences",
-    body: "Hand-picked tours and moments that match how you like to travel — relaxed, adventurous, or something in between.",
+    body: "Hand-picked tours and moments that match how you like to travel whether it be relaxed, adventurous, or something in between.",
   },
   {
     title: "Real guidance",
@@ -37,7 +37,7 @@ export default function Home() {
             Edwards Travel
           </p>
           <h1 className="mt-4 max-w-xl font-serif text-4xl font-semibold leading-tight tracking-tight text-white sm:text-5xl lg:text-6xl">
-            Go farther—with a plan that feels effortless.
+            Go farther with a plan that feels effortless.
           </h1>
           <p className="mt-5 max-w-lg text-lg text-white/90">
             Discover experiences and destinations worth slowing down for. Tell
@@ -45,16 +45,16 @@ export default function Home() {
           </p>
           <div className="mt-10 flex flex-wrap gap-3">
             <Link
-              href="/search-trips"
+              href="/contact"
               className="inline-flex items-center justify-center rounded-full bg-[var(--color-coral)] px-6 py-3 text-sm font-semibold text-white shadow-lg transition hover:brightness-105"
             >
-              Search trips
+              Start your trip today
             </Link>
             <Link
-              href="/contact"
+              href="/search-trips"
               className="inline-flex items-center justify-center rounded-full border-2 border-white/40 bg-white/10 px-6 py-3 text-sm font-semibold text-white backdrop-blur-sm transition hover:bg-white/20"
             >
-              Contact us
+              Search trips
             </Link>
           </div>
         </div>
@@ -146,7 +146,7 @@ export default function Home() {
             href="/contact"
             className="mt-8 inline-flex rounded-full bg-[var(--color-coral)] px-8 py-3 text-sm font-semibold text-white transition hover:brightness-105"
           >
-            Start a conversation
+            Start your trip today
           </Link>
         </div>
       </section>
