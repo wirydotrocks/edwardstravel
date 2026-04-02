@@ -1,9 +1,12 @@
 import sanitizeHtml from "sanitize-html";
 import { maxQualityFeedImageUrl } from "@/lib/feed-image-url";
 
-/** Syndicated site origin — used to resolve relative links/images in HTML */
+/**
+ * Origin used to resolve relative `href` / `src` in RSS HTML. Default matches this site; if posts
+ * still reference paths from another host during migration, set `EDWARDS_LEGACY_ORIGIN` there.
+ */
 const LEGACY_ORIGIN =
-  process.env.EDWARDS_LEGACY_ORIGIN ?? "https://www.edwardstraveltour.com";
+  process.env.EDWARDS_LEGACY_ORIGIN ?? "https://edwardstravel.com";
 
 function absolutizePath(url: string | undefined): string | undefined {
   if (!url) return url;

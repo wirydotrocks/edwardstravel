@@ -9,9 +9,12 @@ import {
 
 export type { RssSection };
 
-/** Default matches the edwardstraveltour.com RSS. Override via EDWARDS_RSS_URL. */
+/**
+ * RSS for this Edwards Travel site. Default is this domain’s `/rss` (same as layout metadataBase).
+ * Override with `EDWARDS_RSS_URL` for staging or if your CMS uses another path (e.g. `/feed/`).
+ */
 export const EDWARDS_RSS_URL =
-  process.env.EDWARDS_RSS_URL ?? "https://www.edwardstraveltour.com/rss";
+  process.env.EDWARDS_RSS_URL ?? "https://edwardstravel.com/rss";
 
 export type EdwardsRssItem = {
   slug: string;
