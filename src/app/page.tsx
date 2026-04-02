@@ -22,38 +22,8 @@ export default function Home() {
     <div className="flex flex-1 flex-col">
       <HomeHero />
 
-      <section
-        id="why-travel"
-        className="border-b border-[var(--color-border)] bg-[var(--color-surface)] py-16 sm:py-20"
-      >
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <h2 className="font-serif text-3xl font-semibold tracking-tight text-[var(--color-ocean-deep)] sm:text-4xl">
-            Why travel with us
-          </h2>
-          <p className="mt-3 max-w-2xl text-[var(--color-muted)]">
-            Whether you already have a dream destination or you&apos;re still
-            exploring ideas, we&apos;re here to turn inspiration into a
-            well-organized trip.
-          </p>
-          <ul className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-            {highlights.map((item) => (
-              <li
-                key={item.title}
-                className="rounded-2xl border border-[var(--color-border)] bg-white p-6 shadow-sm"
-              >
-                <h3 className="font-serif text-xl font-semibold text-[var(--color-ocean-deep)]">
-                  {item.title}
-                </h3>
-                <p className="mt-3 text-sm leading-relaxed text-[var(--color-muted)]">
-                  {item.body}
-                </p>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
-
-      <section className="bg-[var(--color-sand)] py-16 sm:py-20">
+      {/* Stories first — why visitors came to the site */}
+      <section className="border-b border-[var(--color-border)] bg-[var(--color-sand)] py-16 sm:py-20">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
             <div>
@@ -95,6 +65,86 @@ export default function Home() {
               ),
             )}
           </div>
+        </div>
+      </section>
+
+      {/* Specials + Groups — between Stories and Why travel */}
+      <section
+        aria-labelledby="specials-heading"
+        className="border-b border-[var(--color-border)] bg-[var(--color-surface)] py-16 sm:py-20"
+      >
+        <div className="mx-auto grid max-w-6xl gap-8 px-4 sm:px-6 lg:grid-cols-2 lg:gap-10 lg:px-8">
+          <div className="flex flex-col rounded-2xl border border-[var(--color-border)] bg-white p-6 shadow-sm sm:p-8">
+            <h2
+              id="specials-heading"
+              className="font-serif text-2xl font-semibold text-[var(--color-ocean-deep)] sm:text-3xl"
+            >
+              Specials
+            </h2>
+            <p className="mt-4 flex-1 text-[var(--color-muted)]">
+              Find the best travel specials with Edward&apos;s Travel. 
+              <br />
+              Browse our hot travel deals to plan your next trip.
+            </p>
+            <Link
+              href="/specials"
+              className="mt-8 inline-flex w-fit rounded-full bg-[var(--color-coral)] px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:brightness-105"
+            >
+              View specials
+            </Link>
+          </div>
+
+          <div className="flex flex-col rounded-2xl border border-[var(--color-border)] bg-white p-6 shadow-sm sm:p-8">
+            <h2
+              id="groups-heading"
+              className="font-serif text-2xl font-semibold text-[var(--color-ocean-deep)] sm:text-3xl"
+            >
+              Groups
+            </h2>
+            <p className="mt-4 flex-1 text-[var(--color-muted)]">
+              The best parts about traveling with a
+              group are the experiences, a new network of friends you create
+              along the way, and the memories you take home long after your
+              vacation is over.
+            </p>
+            <Link
+              href="/group-getaways"
+              className="mt-8 inline-flex w-fit rounded-full bg-[var(--color-coral)] px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:brightness-105"
+            >
+              Group getaways
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <section
+        id="why-travel"
+        className="border-b border-[var(--color-border)] bg-[var(--color-sand)] py-16 sm:py-20"
+      >
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+          <h2 className="font-serif text-3xl font-semibold tracking-tight text-[var(--color-ocean-deep)] sm:text-4xl">
+            Why travel with us
+          </h2>
+          <p className="mt-3 max-w-2xl text-[var(--color-muted)]">
+            Whether you already have a dream destination or you&apos;re still
+            exploring ideas, we&apos;re here to turn inspiration into a
+            well-organized trip.
+          </p>
+          <ul className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            {highlights.map((item) => (
+              <li
+                key={item.title}
+                className="rounded-2xl border border-[var(--color-border)] bg-white p-6 shadow-sm"
+              >
+                <h3 className="font-serif text-xl font-semibold text-[var(--color-ocean-deep)]">
+                  {item.title}
+                </h3>
+                <p className="mt-3 text-sm leading-relaxed text-[var(--color-muted)]">
+                  {item.body}
+                </p>
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
 
