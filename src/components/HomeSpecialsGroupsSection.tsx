@@ -23,8 +23,8 @@ export function HomeSpecialsGroupsSection() {
     const rect = el.getBoundingClientRect();
     const vh = window.innerHeight;
     const centerDelta = rect.top + rect.height / 2 - vh / 2;
-    const raw = centerDelta * -0.06;
-    setParallaxY(Math.max(-28, Math.min(28, raw)));
+    const raw = centerDelta * -0.12;
+    setParallaxY(Math.max(-52, Math.min(52, raw)));
   }, []);
 
   useEffect(() => {
@@ -57,7 +57,7 @@ export function HomeSpecialsGroupsSection() {
             className={
               reduceMotion
                 ? "absolute inset-0 h-full w-full"
-                : "absolute inset-0 h-[118%] w-full"
+                : "absolute inset-0 h-[124%] w-full"
             }
             style={
               reduceMotion
