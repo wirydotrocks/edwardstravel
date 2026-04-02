@@ -1,13 +1,12 @@
 import Image from "next/image";
-import Link from "next/link";
-import { mainNav } from "@/lib/nav";
+import { OfficeLocationsFooter } from "@/components/OfficeLocationsBlock";
 
 export function SiteFooter() {
   return (
     <footer className="mt-auto border-t border-[var(--color-border)] bg-[var(--color-ocean-deep)] text-[var(--color-sand)]">
       <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="flex flex-col gap-10 md:flex-row md:justify-between">
-          <div>
+        <div className="flex flex-col gap-12 md:flex-row md:items-start md:gap-0">
+          <div className="shrink-0">
             <Image
               src="/edwards-travel-logo.png"
               alt="Edward's Travel"
@@ -20,23 +19,7 @@ export function SiteFooter() {
               adventure starts with a conversation.
             </p>
           </div>
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-white/50">
-              Explore
-            </p>
-            <ul className="mt-3 grid grid-cols-2 gap-x-8 gap-y-2 sm:grid-cols-3">
-              {mainNav.map((item) => (
-                <li key={item.href}>
-                  <Link
-                    href={item.href}
-                    className="text-sm text-white/85 hover:text-white"
-                  >
-                    {item.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
+          <OfficeLocationsFooter className="min-w-0 w-full md:ml-auto md:w-auto" />
         </div>
         <p className="mt-10 border-t border-white/15 pt-8 text-center text-xs text-white/55">
           © {new Date().getFullYear()} Edwards Travel. Planned for{" "}

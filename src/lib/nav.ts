@@ -7,5 +7,5 @@ export const mainNav: NavItem[] = [
   { href: "/blog", label: "Blog" },
   { href: "/search-trips", label: "Search Trips" },
   { href: "/about", label: "About us" },
-  { href: "/business-inquiries", label: "Business Inquiries" },
+  { href: "/contact", label: "Contact Us" },
 ];

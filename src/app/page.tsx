@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { HomeAboutSection } from "@/components/HomeAboutSection";
 import { HomeHero } from "@/components/HomeHero";
@@ -7,14 +8,24 @@ const highlights = [
   {
     title: "Curated experiences",
     body: "Hand-picked tours and moments that match how you like to travel whether it be relaxed, adventurous, or something in between.",
+    imageSrc:
+      "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=1200&q=80",
+    imageAlt: "Scenic lake and mountains at sunrise, representing a thoughtfully chosen destination",
   },
   {
     title: "Real guidance",
     body: "We handle the details so you can focus on the scenery, the culture, and the people you travel with.",
+    imageSrc:
+      "https://images.unsplash.com/photo-1526772662000-3f88f10405ff?auto=format&fit=crop&w=1200&q=80",
+    imageAlt:
+      "Travelers on a scenic coastal path, representing guidance from planning through the journey",
   },
   {
     title: "Built around you",
     body: "Destinations, timing, and trip length shaped around your calendar, budget, and bucket list.",
+    imageSrc:
+      "https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=1200&q=80",
+    imageAlt: "Passport, camera, and travel essentials laid out, representing a trip tailored to you",
   },
 ];
 
@@ -88,14 +99,25 @@ export default function Home() {
             {highlights.map((item) => (
               <li
                 key={item.title}
-                className="rounded-2xl border border-[var(--color-border)] bg-white p-6 shadow-sm"
+                className="overflow-hidden rounded-2xl border border-[var(--color-border)] bg-white shadow-sm"
               >
-                <h3 className="font-serif text-xl font-semibold text-[var(--color-ocean-deep)]">
-                  {item.title}
-                </h3>
-                <p className="mt-3 text-sm leading-relaxed text-[var(--color-muted)]">
-                  {item.body}
-                </p>
+                <div className="relative aspect-[16/10] w-full bg-[var(--color-sand-muted)]">
+                  <Image
+                    src={item.imageSrc}
+                    alt={item.imageAlt}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 320px"
+                  />
+                </div>
+                <div className="p-6">
+                  <h3 className="font-serif text-xl font-semibold text-[var(--color-ocean-deep)]">
+                    {item.title}
+                  </h3>
+                  <p className="mt-3 text-sm leading-relaxed text-[var(--color-muted)]">
+                    {item.body}
+                  </p>
+                </div>
               </li>
             ))}
           </ul>

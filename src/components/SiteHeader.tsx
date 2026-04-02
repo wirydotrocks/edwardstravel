@@ -80,7 +80,7 @@ export function SiteHeader() {
               </Link>
             ))}
           </nav>
-          <Link href="/contact" className={ctaClassName}>
+          <Link href="/contact?topic=plan-trip" className={ctaClassName}>
             Start your trip today
           </Link>
         </div>
