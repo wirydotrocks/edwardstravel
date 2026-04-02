@@ -6,7 +6,7 @@ import { HomeSpecialsGroupsSection } from "@/components/HomeSpecialsGroupsSectio
 
 const highlights = [
   {
-    title: "Curated experiences",
+    title: "Thoughtful experiences",
     body: "Hand-picked tours and moments that match how you like to travel whether it be relaxed, adventurous, or something in between.",
     imageSrc:
       "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=1200&q=80",

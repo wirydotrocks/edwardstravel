@@ -1,6 +1,13 @@
 import { unstable_cache } from "next/cache";
 import Parser from "rss-parser";
+import { formatLongUsDate } from "@/lib/date-format";
 import { maxQualityFeedImageUrl } from "@/lib/feed-image-url";
+import {
+  classifyRssSection,
+  type RssSection,
+} from "@/lib/rss-section";
+
+export type { RssSection };
 
 /** Default matches the edwardstraveltour.com RSS. Override via EDWARDS_RSS_URL. */
 export const EDWARDS_RSS_URL =
@@ -11,6 +18,9 @@ export type EdwardsRssItem = {
   guid: string;
   title: string;
   imageUrl: string | null;
+  /** All RSS categories for this item (used to route to Experiences / Destinations / Blog) */
+  categories: string[];
+  /** First category, for display */
   category: string | null;
   /** ISO 8601 timestamp when the feed provides a valid pub date */
   publishedAt: string | null;
@@ -42,14 +52,8 @@ function parseItemPublishedAt(raw: Parser.Item): string | null {
   return null;
 }
 
-/** Display date for blog UI (e.g. &quot;April 2, 2026&quot;) */
-export function formatRssPostDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-}
+/** @deprecated import {@link formatLongUsDate} from `@/lib/date-format` */
+export const formatRssPostDate = formatLongUsDate;
 
 function firstUrlFromImageField(
   image: ItemWithImage["image"],
@@ -71,6 +75,18 @@ function stripHtml(html: string): string {
     .replace(/&nbsp;/g, " ")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+function categoriesFromRaw(raw: Parser.Item): string[] {
+  const fromFeed = raw.categories?.length
+    ? raw.categories.map((c) => String(c).trim()).filter(Boolean)
+    : [];
+  const legacy = (raw as { category?: string }).category;
+  if (typeof legacy === "string" && legacy.trim()) {
+    const v = legacy.trim();
+    if (!fromFeed.includes(v)) fromFeed.unshift(v);
+  }
+  return fromFeed;
 }
 
 export function slugFromPermalink(link: string): string {
@@ -119,15 +135,15 @@ function normalizeItem(raw: Parser.Item): EdwardsRssItem {
         ? String((raw.guid as { value?: string }).value)
         : permalink || raw.title || "";
 
-  const cat = raw.categories?.[0] ?? (raw as { category?: string }).category;
-  const category =
-    typeof cat === "string" && cat.trim() ? cat.trim() : null;
+  const categories = categoriesFromRaw(raw);
+  const category = categories[0] ?? null;
 
   return {
     slug: slugFromPermalink(permalink),
     guid,
     title: raw.title?.trim() || "Untitled",
     imageUrl,
+    categories,
     category,
     publishedAt: parseItemPublishedAt(raw),
     snippet: snippetFromItem(raw),
@@ -211,4 +227,24 @@ export async function loadEdwardsRssSafe(): Promise<RssLoadState> {
         e instanceof Error ? e.message : "Unable to load stories from the feed.",
     };
   }
+}
+
+function sortByPublishedDesc(a: EdwardsRssItem, b: EdwardsRssItem): number {
+  const ta = a.publishedAt ? Date.parse(a.publishedAt) : 0;
+  const tb = b.publishedAt ? Date.parse(b.publishedAt) : 0;
+  return tb - ta;
+}
+
+/** Items from the Edwards RSS feed that map to a single section (Experiences, Destinations, or Blog). */
+export async function loadEdwardsRssSectionSafe(
+  section: RssSection,
+  limit?: number,
+): Promise<RssLoadState> {
+  const state = await loadEdwardsRssSafe();
+  if (!state.ok) return state;
+  let items = state.items
+    .filter((i) => classifyRssSection(i.categories) === section)
+    .sort(sortByPublishedDesc);
+  if (limit != null) items = items.slice(0, limit);
+  return { ok: true, items };
 }

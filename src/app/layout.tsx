@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     template: "%s | Edwards Travel",
   },
   description:
-    "Explore the world with Edwards Travel — curated experiences, destinations, and personalized trip planning.",
+    "Explore the world with Edwards Travel — personalized experiences, destinations, and trip planning.",
   metadataBase: new URL("https://edwardstravel.com"),
 };
 

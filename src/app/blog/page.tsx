@@ -1,17 +1,17 @@
 import type { Metadata } from "next";
 import { BlogFeed } from "@/components/BlogFeed";
-import { loadEdwardsRssSafe } from "@/lib/edwards-rss";
+import { loadEdwardsRssSectionSafe } from "@/lib/edwards-rss";
 
 export const metadata: Metadata = {
   title: "Blog",
   description:
-    "Travel stories and inspiration from Edward's Travel — synced from our editorial RSS feed.",
+    "Travel stories and inspiration from Edward's Travel — synced from our RSS feed.",
 };
 
 export const revalidate = 300;
 
 export default async function BlogPage() {
-  const feed = await loadEdwardsRssSafe();
+  const feed = await loadEdwardsRssSectionSafe("blog");
 
   return (
     <main className="mx-auto max-w-6xl flex-1 px-4 py-14 sm:px-6 lg:px-8">
@@ -19,8 +19,22 @@ export default async function BlogPage() {
         Blog
       </h1>
       <p className="mt-4 max-w-2xl text-[var(--color-muted)]">
-        Stories from our editorial RSS feed, in feed order. Open any card to
-        read the full article on this site.
+        Posts from our RSS feed that are tagged for the blog. Open any card to read
+        the full article on this site. For cruises and product stories, see{" "}
+        <a
+          href="/experiences"
+          className="font-medium text-[var(--color-ocean)] underline-offset-2 hover:underline"
+        >
+          Experiences
+        </a>
+        ; for place-focused pieces, see{" "}
+        <a
+          href="/destinations"
+          className="font-medium text-[var(--color-ocean)] underline-offset-2 hover:underline"
+        >
+          Destinations
+        </a>
+        .
       </p>
 
       {!feed.ok ? (
