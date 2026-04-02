@@ -47,6 +47,7 @@ export function HomeSpecialsGroupsSection() {
 
   return (
     <section
+      id="home-specials-groups"
       ref={sectionRef}
       aria-labelledby="specials-heading"
       className="relative isolate flex min-h-[min(62vh,48rem)] flex-col justify-center overflow-hidden border-b border-[var(--color-border)] py-24 sm:py-32 md:py-40"

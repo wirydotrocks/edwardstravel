@@ -9,17 +9,54 @@ import { mainNav } from "@/lib/nav";
 const ctaClassName =
   "shrink-0 rounded-full bg-[var(--color-coral)] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:brightness-105";
 
-/** When a light section reaches the header bar (after the hero), use solid styles */
+/** Sample just under the sticky bar to see which home section is behind it */
 const HEADER_BAR_PX = 64;
+const PROBE_OFFSET_PX = 12;
 
+/**
+ * Find the nearest `<section>` ancestor of whatever is under the probe point
+ * (parallax layers use `pointer-events: none`, so we hit real content).
+ */
+function homeSectionUnderProbe(probeY: number): HTMLElement | null {
+  const x = Math.min(window.innerWidth - 8, Math.max(8, window.innerWidth / 2));
+  const stack = document.elementsFromPoint(x, probeY);
+  for (const node of stack) {
+    let el: HTMLElement | null = node instanceof HTMLElement ? node : null;
+    while (el && el !== document.body) {
+      if (el.tagName === "SECTION") return el;
+      el = el.parentElement;
+    }
+  }
+  return null;
+}
+
+/**
+ * Opaque bar on light bands; transparent on hero + photo parallax bands.
+ * Uses a viewport probe so scrolling past “Stories” doesn’t leave the bar
+ * stuck solid over Specials / About.
+ */
 function computeHomeHeaderSolid() {
-  const stories = document.getElementById("stories-inspiration");
-  const whyTravel = document.getElementById("why-travel");
-  const section = stories ?? whyTravel;
-  if (!section) {
+  const probeY = HEADER_BAR_PX + PROBE_OFFSET_PX;
+  const sec = homeSectionUnderProbe(probeY);
+
+  if (!sec) {
     return window.scrollY > window.innerHeight * 0.75;
   }
-  return section.getBoundingClientRect().top <= HEADER_BAR_PX;
+
+  if (sec.getAttribute("aria-label") === "Hero") {
+    return false;
+  }
+
+  switch (sec.id) {
+    case "stories-inspiration":
+    case "why-travel":
+      return true;
+    case "home-specials-groups":
+    case "about":
+      return false;
+    default:
+      return true;
+  }
 }
 
 export function SiteHeader() {
