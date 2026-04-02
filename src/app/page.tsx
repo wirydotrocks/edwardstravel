@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { HomeAboutSection } from "@/components/HomeAboutSection";
 import { HomeHero } from "@/components/HomeHero";
+import { HomeSpecialsGroupsSection } from "@/components/HomeSpecialsGroupsSection";
 
 const highlights = [
   {
@@ -68,54 +69,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Specials + Groups — between Stories and Why travel */}
-      <section
-        aria-labelledby="specials-heading"
-        className="border-b border-[var(--color-border)] bg-[var(--color-surface)] py-16 sm:py-20"
-      >
-        <div className="mx-auto grid max-w-6xl gap-8 px-4 sm:px-6 lg:grid-cols-2 lg:gap-10 lg:px-8">
-          <div className="flex flex-col rounded-2xl border border-[var(--color-border)] bg-white p-6 shadow-sm sm:p-8">
-            <h2
-              id="specials-heading"
-              className="font-serif text-2xl font-semibold text-[var(--color-ocean-deep)] sm:text-3xl"
-            >
-              Specials
-            </h2>
-            <p className="mt-4 flex-1 text-[var(--color-muted)]">
-              Find the best travel specials with Edward&apos;s Travel. 
-              <br />
-              Browse our hot travel deals to plan your next trip.
-            </p>
-            <Link
-              href="/specials"
-              className="mt-8 inline-flex w-fit rounded-full bg-[var(--color-coral)] px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:brightness-105"
-            >
-              View specials
-            </Link>
-          </div>
-
-          <div className="flex flex-col rounded-2xl border border-[var(--color-border)] bg-white p-6 shadow-sm sm:p-8">
-            <h2
-              id="groups-heading"
-              className="font-serif text-2xl font-semibold text-[var(--color-ocean-deep)] sm:text-3xl"
-            >
-              Groups
-            </h2>
-            <p className="mt-4 flex-1 text-[var(--color-muted)]">
-              The best parts about traveling with a
-              group are the experiences, a new network of friends you create
-              along the way, and the memories you take home long after your
-              vacation is over.
-            </p>
-            <Link
-              href="/group-getaways"
-              className="mt-8 inline-flex w-fit rounded-full bg-[var(--color-coral)] px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:brightness-105"
-            >
-              Group getaways
-            </Link>
-          </div>
-        </div>
-      </section>
+      <HomeSpecialsGroupsSection />
 
       <section
         id="why-travel"
@@ -149,26 +103,6 @@ export default function Home() {
       </section>
 
       <HomeAboutSection />
-
-      <section className="bg-[var(--color-ocean-deep)] py-16 text-center sm:py-20">
-        <div className="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8">
-          <h2 className="font-serif text-3xl font-semibold text-white sm:text-4xl">
-            Ready when you are
-          </h2>
-          <p className="mt-4 text-white/85">
-            Share your destination ideas, month, and how long you&apos;d like to
-            be away.
-            <br />
-            We&apos;ll follow up with thoughtful options.
-          </p>
-          <Link
-            href="/contact"
-            className="mt-8 inline-flex rounded-full bg-[var(--color-coral)] px-8 py-3 text-sm font-semibold text-white transition hover:brightness-105"
-          >
-            Start your trip today
-          </Link>
-        </div>
-      </section>
     </div>
   );
 }

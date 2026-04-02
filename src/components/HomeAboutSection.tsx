@@ -53,7 +53,7 @@ export function HomeAboutSection() {
     <section
       ref={sectionRef}
       id="about"
-      className="relative overflow-hidden border-t border-[var(--color-border)] py-16 sm:py-24"
+      className="relative flex min-h-[min(58vh,44rem)] flex-col justify-center overflow-hidden border-t border-[var(--color-border)] py-28 sm:py-40 md:py-48"
       aria-labelledby="home-about-heading"
     >
       {/* Background: extra vertical room so small translate never shows gaps */}
@@ -87,7 +87,7 @@ export function HomeAboutSection() {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_90%_70%_at_50%_50%,rgba(15,35,55,0.35)_0%,transparent_65%)]" />
       </div>
 
-      <div className="relative z-10 mx-auto max-w-6xl px-4 text-center sm:px-6 lg:px-8">
+      <div className="relative z-10 mx-auto max-w-6xl px-4 py-6 text-center sm:px-6 sm:py-10 lg:px-8">
         <h2
           id="home-about-heading"
           className="font-serif text-3xl font-semibold tracking-tight text-white [text-shadow:_0_2px_16px_rgba(0,0,0,0.45)] sm:text-4xl"
@@ -96,7 +96,9 @@ export function HomeAboutSection() {
         </h2>
         <p className="mx-auto mt-4 max-w-xl text-base text-white [text-shadow:_0_1px_10px_rgba(0,0,0,0.4)] sm:text-lg">
           Thoughtful trips, personal service, and a team that stays with you
-          from first ideas to takeoff. Meet the people behind Edward&apos;s Travel.
+          from first ideas to takeoff. 
+          <br />
+          Meet the people behind Edward&apos;s Travel.
         </p>
         <Link
           href="/about"
