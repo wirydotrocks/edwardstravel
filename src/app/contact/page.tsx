@@ -42,8 +42,8 @@ export default async function ContactPage({
         Contact us
       </h1>
       <p className="mt-4 max-w-2xl text-[var(--color-muted)]">
-        Tell us what you need — trip planning, a business conversation, or
-        something else — and we&apos;ll take it from there.
+        Tell us what you need! Trip planning, a business conversation, or
+        something else and we&apos;ll take it from there.
       </p>
 
       <div className="mt-12 flex flex-col gap-10 lg:mt-14 lg:flex-row lg:items-start lg:gap-12 xl:gap-16">

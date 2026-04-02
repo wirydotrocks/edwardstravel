@@ -5,6 +5,15 @@ import { useSearchParams } from "next/navigation";
 
 const defaultEmail = "hello@edwardstravel.com";
 
+function formatPlanTripTimingForEmail(monthText: string, yearStr: string): string {
+  const m = monthText.trim();
+  const y = yearStr.trim();
+  if (!m && !y) return "";
+  if (m && y) return `${m} ${y}`;
+  if (m) return m;
+  return `Year ${y}`;
+}
+
 type HelpTopic = "" | "business" | "plan-trip" | "other";
 
 function topicFromParam(param: string | null): HelpTopic {
@@ -32,7 +41,7 @@ function buildPlanTripMailto(params: {
     `Name: ${params.name || "(not provided)"}`,
     `Destination ideas: ${params.destination || "(not provided)"}`,
     `Travel style: ${params.travelType || "(not provided)"}`,
-    `Preferred month: ${params.month || "(not provided)"}`,
+    `Preferred timing: ${params.month || "(not provided)"}`,
     `Trip length: ${params.length || "(not provided)"}`,
     "",
     "More details:",
@@ -95,6 +104,7 @@ export function ContactForm({ initialTopic }: { initialTopic?: string }) {
   const [helpTopic, setHelpTopic] = useState<HelpTopic>(() =>
     topicFromParam(initialTopic ?? null),
   );
+  const [earliestTravelYear] = useState(() => new Date().getFullYear());
 
   useEffect(() => {
     setHelpTopic(topicFromParam(searchParams.get("topic")));
@@ -106,7 +116,8 @@ export function ContactForm({ initialTopic }: { initialTopic?: string }) {
   const [ptName, setPtName] = useState("");
   const [destination, setDestination] = useState("");
   const [travelType, setTravelType] = useState("");
-  const [month, setMonth] = useState("");
+  const [tripMonthText, setTripMonthText] = useState("");
+  const [tripYearInput, setTripYearInput] = useState("");
   const [length, setLength] = useState("");
   const [ptNotes, setPtNotes] = useState("");
 
@@ -122,15 +133,44 @@ export function ContactForm({ initialTopic }: { initialTopic?: string }) {
   const [otherEmail, setOtherEmail] = useState("");
   const [otherMessage, setOtherMessage] = useState("");
 
+  const tripYearNum = useMemo(() => {
+    const t = tripYearInput.trim();
+    if (t === "") return null;
+    const n = parseInt(t, 10);
+    return Number.isFinite(n) ? n : NaN;
+  }, [tripYearInput]);
+
+  const planTripYearInvalid =
+    tripYearInput.trim() !== "" &&
+    (tripYearNum == null ||
+      Number.isNaN(tripYearNum) ||
+      tripYearNum < earliestTravelYear);
+
+  const planTripTimingLabel = useMemo(() => {
+    const y =
+      tripYearInput.trim() === "" || planTripYearInvalid
+        ? ""
+        : String(tripYearNum);
+    return formatPlanTripTimingForEmail(tripMonthText, y);
+  }, [
+    tripMonthText,
+    tripYearInput,
+    tripYearNum,
+    planTripYearInvalid,
+  ]);
+
   const mailtoHref = useMemo(() => {
     const to = emailTo.trim() || defaultEmail;
     if (helpTopic === "plan-trip") {
+      if (planTripYearInvalid) {
+        return "#";
+      }
       return buildPlanTripMailto({
         to,
         name: ptName,
         destination,
         travelType,
-        month,
+        month: planTripTimingLabel,
         length,
         notes: ptNotes,
       });
@@ -160,7 +200,7 @@ export function ContactForm({ initialTopic }: { initialTopic?: string }) {
     ptName,
     destination,
     travelType,
-    month,
+    planTripTimingLabel,
     length,
     ptNotes,
     organization,
@@ -171,6 +211,7 @@ export function ContactForm({ initialTopic }: { initialTopic?: string }) {
     otherName,
     otherEmail,
     otherMessage,
+    planTripYearInvalid,
   ]);
 
   const inputClass =
@@ -180,7 +221,7 @@ export function ContactForm({ initialTopic }: { initialTopic?: string }) {
   return (
     <form className="max-w-xl space-y-6" onSubmit={(e) => e.preventDefault()}>
       <p className="text-sm text-[var(--color-muted)]">
-        Choose how we can help, then tell us more — we&apos;ll open a pre-filled
+        Choose how we can help, then tell us more.  We&apos;ll open a pre-filled
         email draft in your mail app.
       </p>
 
@@ -251,33 +292,68 @@ export function ContactForm({ initialTopic }: { initialTopic?: string }) {
               <option value="Not sure yet">Not sure yet</option>
             </select>
           </div>
-          <div className="grid gap-6 sm:grid-cols-2">
-            <div>
-              <label htmlFor="contact-month" className={labelClass}>
-                Preferred month
-              </label>
-              <input
-                id="contact-month"
-                type="text"
-                value={month}
-                onChange={(e) => setMonth(e.target.value)}
-                className={inputClass}
-                placeholder="e.g. October 2026"
-              />
+          <div className="space-y-4">
+            <p className={labelClass}>When are you hoping to go?</p>
+            <p className="text-xs text-[var(--color-muted)]">
+              Type what works for you. Years must be{" "}
+              <span className="font-medium">{earliestTravelYear}</span> or later
+              (already-passed years aren&apos;t valid).
+            </p>
+            <div className="grid gap-6 sm:grid-cols-2">
+              <div>
+                <label htmlFor="contact-month-text" className={labelClass}>
+                  Month or season
+                </label>
+                <input
+                  id="contact-month-text"
+                  type="text"
+                  value={tripMonthText}
+                  onChange={(e) => setTripMonthText(e.target.value)}
+                  className={inputClass}
+                  placeholder="e.g. March, early summer, Q4…"
+                  autoComplete="off"
+                />
+              </div>
+              <div>
+                <label htmlFor="contact-year" className={labelClass}>
+                  Year <span className="font-normal text-[var(--color-muted)]">(optional)</span>
+                </label>
+                <input
+                  id="contact-year"
+                  type="number"
+                  inputMode="numeric"
+                  min={earliestTravelYear}
+                  step={1}
+                  value={tripYearInput}
+                  onChange={(e) => setTripYearInput(e.target.value)}
+                  aria-invalid={planTripYearInvalid}
+                  className={`${inputClass} tabular-nums ${
+                    planTripYearInvalid
+                      ? "border-[var(--color-coral)] ring-1 ring-[var(--color-coral)]/40"
+                      : ""
+                  }`}
+                  placeholder={String(earliestTravelYear)}
+                />
+                {planTripYearInvalid ? (
+                  <p className="mt-1.5 text-xs font-medium text-[var(--color-coral)]">
+                    Use {earliestTravelYear} or a later year.
+                  </p>
+                ) : null}
+              </div>
             </div>
-            <div>
-              <label htmlFor="contact-length" className={labelClass}>
-                How long away?
-              </label>
-              <input
-                id="contact-length"
-                type="text"
-                value={length}
-                onChange={(e) => setLength(e.target.value)}
-                className={inputClass}
-                placeholder="e.g. 10 days"
-              />
-            </div>
+          </div>
+          <div>
+            <label htmlFor="contact-length" className={labelClass}>
+              How long away?
+            </label>
+            <input
+              id="contact-length"
+              type="text"
+              value={length}
+              onChange={(e) => setLength(e.target.value)}
+              className={inputClass}
+              placeholder="e.g. 10 days"
+            />
           </div>
           <div>
             <label htmlFor="contact-notes" className={labelClass}>
@@ -413,7 +489,7 @@ export function ContactForm({ initialTopic }: { initialTopic?: string }) {
               onChange={(e) => setOtherMessage(e.target.value)}
               rows={5}
               className={`${inputClass} resize-y`}
-              placeholder="Tell us what you need — we’ll get back to you."
+              placeholder="Tell us what you need and we’ll get back to you."
             />
           </div>
         </>
@@ -439,10 +515,27 @@ export function ContactForm({ initialTopic }: { initialTopic?: string }) {
           </div>
           <a
             href={mailtoHref}
-            className="inline-flex w-full items-center justify-center rounded-full bg-[var(--color-coral)] px-6 py-3 text-sm font-semibold text-white transition hover:brightness-105 sm:w-auto"
+            onClick={(e) => {
+              if (helpTopic === "plan-trip" && planTripYearInvalid) {
+                e.preventDefault();
+              }
+            }}
+            aria-disabled={
+              helpTopic === "plan-trip" && planTripYearInvalid ? true : undefined
+            }
+            className={`inline-flex w-full items-center justify-center rounded-full bg-[var(--color-coral)] px-6 py-3 text-sm font-semibold text-white transition hover:brightness-105 sm:w-auto ${
+              helpTopic === "plan-trip" && planTripYearInvalid
+                ? "cursor-not-allowed opacity-50"
+                : ""
+            }`}
           >
             Open email draft
           </a>
+          {helpTopic === "plan-trip" && planTripYearInvalid ? (
+            <p className="text-xs text-[var(--color-muted)]">
+              Fix the year above to open your mail draft.
+            </p>
+          ) : null}
         </>
       )}
     </form>

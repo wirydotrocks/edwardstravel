@@ -92,7 +92,7 @@ export function OfficeLocationsGlob() {
         Edwards Travel
       </p>
       <p className="mt-1 text-sm text-[var(--color-muted)]">
-        Reach either location — we&apos;re happy to help.
+        Reach either location! We&apos;re happy to help.
       </p>
       <div className="mt-6 space-y-5">
         {officeLocations.map((loc) => (
