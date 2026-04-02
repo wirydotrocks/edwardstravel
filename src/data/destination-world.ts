@@ -4,6 +4,9 @@
  *
  * Add rows here as you retire old “flat” location pages—matchTerms should include names
  * visitors (and your feed titles) actually use, including aliases.
+ *
+ * Country `imageUrl` values must be reachable (HTTP 200). Unsplash sometimes retires
+ * photos; if cards show broken images, verify the URL or host assets on your own CDN.
  */
 
 export type Subdivision = {
@@ -16,6 +19,11 @@ export type Subdivision = {
 export type Country = {
   slug: string;
   name: string;
+  /** Hero image (e.g. Unsplash); shown on browse cards and country pages. */
+  imageUrl: string;
+  imageAlt: string;
+  /** Short intro blurb for cards and the country landing page. */
+  description: string;
   continentId: string;
   matchTerms: string[];
   subdivisions: Subdivision[];
@@ -44,6 +52,11 @@ export const COUNTRIES: Country[] = [
   {
     slug: "united-states",
     name: "United States",
+    imageUrl:
+      "https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?auto=format&fit=crop&w=1200&q=80",
+    imageAlt: "Manhattan skyline at dusk over the East River",
+    description:
+      "From New York and Miami to Hawaii, Alaska, and the great national parks—endless city breaks, beach escapes, and road-trip possibilities across all fifty states.",
     continentId: "north-america",
     matchTerms: ["united states", "u.s.", "usa", "u.s.a.", "america"],
     subdivisions: [
@@ -86,6 +99,11 @@ export const COUNTRIES: Country[] = [
   {
     slug: "canada",
     name: "Canada",
+    imageUrl:
+      "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=1200&q=80",
+    imageAlt: "Snowy mountain peaks above clouds at sunrise",
+    description:
+      "Cosmopolitan cities, the Rockies, sparkling lakes, and world-class rail journeys—Canada pairs outdoor drama with warm hospitality year-round.",
     continentId: "north-america",
     matchTerms: ["canada", "canadian"],
     subdivisions: [
@@ -109,6 +127,11 @@ export const COUNTRIES: Country[] = [
   {
     slug: "mexico",
     name: "Mexico",
+    imageUrl:
+      "https://images.unsplash.com/photo-1539037116277-4db20889f2d4?auto=format&fit=crop&w=1200&q=80",
+    imageAlt: "Historic European-style plaza with arcades and balconies",
+    description:
+      "Ancient ruins, colonial cities, and the Riviera Maya’s beaches—Mexico delivers culture, cuisine, and resort stays within easy reach.",
     continentId: "north-america",
     matchTerms: ["mexico", "méxico", "mexican"],
     subdivisions: [
@@ -132,6 +155,11 @@ export const COUNTRIES: Country[] = [
   {
     slug: "costa-rica",
     name: "Costa Rica",
+    imageUrl:
+      "https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1200&q=80",
+    imageAlt: "Misty mountain lake and evergreen forests",
+    description:
+      "Wildlife, volcanoes, cloud forests, and Pacific and Caribbean coastlines—Costa Rica is the classic mix of adventure and barefoot luxury.",
     continentId: "north-america",
     matchTerms: ["costa rica"],
     subdivisions: [
@@ -150,6 +178,11 @@ export const COUNTRIES: Country[] = [
   {
     slug: "bahamas",
     name: "Bahamas",
+    imageUrl:
+      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80",
+    imageAlt: "Calm turquoise ocean meeting a sandy tropical shore",
+    description:
+      "An easy hop from the U.S., the Bahamas serves up powder sand, reef diving, island-hopping, and laid-back resorts.",
     continentId: "caribbean",
     matchTerms: ["bahamas", "bahamian", "nassau"],
     subdivisions: [
@@ -168,6 +201,11 @@ export const COUNTRIES: Country[] = [
   {
     slug: "jamaica",
     name: "Jamaica",
+    imageUrl:
+      "https://images.unsplash.com/photo-1506929562872-bb421503ef21?auto=format&fit=crop&w=1200&q=80",
+    imageAlt: "Palm trees along a bright Caribbean shoreline",
+    description:
+      "Reggae rhythms, Blue Mountain coffee, waterfall hikes, and all-inclusive beaches—Jamaica stays a Caribbean favorite for couples and families.",
     continentId: "caribbean",
     matchTerms: ["jamaica", "jamaican"],
     subdivisions: [
@@ -186,6 +224,11 @@ export const COUNTRIES: Country[] = [
   {
     slug: "dominican-republic",
     name: "Dominican Republic",
+    imageUrl:
+      "https://images.unsplash.com/photo-1513415756790-2ac1db1297d0?auto=format&fit=crop&w=1200&q=80",
+    imageAlt: "Palm-fringed tropical beach in the Dominican Republic",
+    description:
+      "Punta Cana’s wide beaches, golf, and value-packed resorts make the DR one of the most booked Caribbean escapes.",
     continentId: "caribbean",
     matchTerms: ["dominican republic", "punta cana", "santo domingo"],
     subdivisions: [
@@ -204,6 +247,11 @@ export const COUNTRIES: Country[] = [
   {
     slug: "puerto-rico",
     name: "Puerto Rico",
+    imageUrl:
+      "https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=1200&q=80",
+    imageAlt: "Tropical island bay with boats and green hills",
+    description:
+      "No passport required for U.S. travelers—Old San Juan, rainforest trails, bioluminescent bays, and bilingual ease in one compact island.",
     continentId: "caribbean",
     matchTerms: ["puerto rico", "boricua", "san juan"],
     subdivisions: [
@@ -222,6 +270,11 @@ export const COUNTRIES: Country[] = [
   {
     slug: "france",
     name: "France",
+    imageUrl:
+      "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=1200&q=80",
+    imageAlt: "Eiffel Tower and Paris cityscape at golden hour",
+    description:
+      "Parisian icons, Provence’s lavender and wine country, and gastronomic detours at every turn—France rewards slow travel and city breaks alike.",
     continentId: "europe",
     matchTerms: ["france", "french"],
     subdivisions: [
@@ -240,6 +293,11 @@ export const COUNTRIES: Country[] = [
   {
     slug: "italy",
     name: "Italy",
+    imageUrl:
+      "https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=crop&w=1200&q=80",
+    imageAlt: "Colorful coastal village cliffs along the Italian Riviera",
+    description:
+      "Rome’s ruins, Tuscany’s hills, Sicily’s sunshine, and tables groaning with regional food—Italy remains a first-trip-to-Europe staple.",
     continentId: "europe",
     matchTerms: ["italy", "italian", "itàlia"],
     subdivisions: [
@@ -263,6 +321,11 @@ export const COUNTRIES: Country[] = [
   {
     slug: "spain",
     name: "Spain",
+    imageUrl:
+      "https://images.unsplash.com/photo-1583422409516-2895a77efded?auto=format&fit=crop&w=1200&q=80",
+    imageAlt: "Ornate basilica towers against a bright sky in Barcelona",
+    description:
+      "Moorish palaces, Mediterranean beaches, pintxos bars, and late-night plazas—Spain mixes history with an easygoing tempo.",
     continentId: "europe",
     matchTerms: ["spain", "spanish", "españa", "espana"],
     subdivisions: [
@@ -281,6 +344,11 @@ export const COUNTRIES: Country[] = [
   {
     slug: "united-kingdom",
     name: "United Kingdom",
+    imageUrl:
+      "https://images.unsplash.com/photo-1483729558449-99ef09a8c325?auto=format&fit=crop&w=1200&q=80",
+    imageAlt: "Historic city neighborhood at dusk with warm lights",
+    description:
+      "Royal London, literary pubs, Scottish highlands, and Wales’ castles—the UK packs variety into a compact, English-speaking itinerary.",
     continentId: "europe",
     matchTerms: ["united kingdom", "uk", "britain", "great britain", "england", "scotland", "wales"],
     subdivisions: [
@@ -299,6 +367,11 @@ export const COUNTRIES: Country[] = [
   {
     slug: "greece",
     name: "Greece",
+    imageUrl:
+      "https://images.unsplash.com/photo-1555881400-74d7acaacd8b?auto=format&fit=crop&w=1200&q=80",
+    imageAlt: "Coastal hills and blue sea along a Mediterranean shore",
+    description:
+      "Athens’ ancient jewels plus island hopping through the Cyclades—Greece pairs archaeology with some of Europe’s best sea views.",
     continentId: "europe",
     matchTerms: ["greece", "greek"],
     subdivisions: [
@@ -317,6 +390,11 @@ export const COUNTRIES: Country[] = [
   {
     slug: "japan",
     name: "Japan",
+    imageUrl:
+      "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=1200&q=80",
+    imageAlt: "Traditional pagoda overlooking layered mountains",
+    description:
+      "Bullet trains, cherry blossoms, temple gardens, and world-class dining—Japan is spotless, safe, and endlessly photogenic.",
     continentId: "asia",
     matchTerms: ["japan", "japanese"],
     subdivisions: [
@@ -335,6 +413,11 @@ export const COUNTRIES: Country[] = [
   {
     slug: "thailand",
     name: "Thailand",
+    imageUrl:
+      "https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?auto=format&fit=crop&w=1200&q=80",
+    imageAlt: "Long-tail boats on clear turquoise water near limestone karsts",
+    description:
+      "Bangkok’s temples and night markets, jungle hills, and jewel-tone islands—Thailand remains the classic introduction to Southeast Asia.",
     continentId: "asia",
     matchTerms: ["thailand", "thai"],
     subdivisions: [
@@ -353,6 +436,11 @@ export const COUNTRIES: Country[] = [
   {
     slug: "australia",
     name: "Australia",
+    imageUrl:
+      "https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9?auto=format&fit=crop&w=1200&q=80",
+    imageAlt: "Sydney Opera House and harbor under a bright sky",
+    description:
+      "Harbor cities, the Red Centre, reef snorkeling, and wine country—Australia is a continent-sized trip best planned in chapters.",
     continentId: "oceania",
     matchTerms: ["australia", "australian"],
     subdivisions: [
@@ -371,6 +459,11 @@ export const COUNTRIES: Country[] = [
   {
     slug: "new-zealand",
     name: "New Zealand",
+    imageUrl:
+      "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=1200&q=80",
+    imageAlt: "Open road through dramatic mountain and valley scenery",
+    description:
+      "Fiords, geothermal valleys, wineries, and “Lord of the Rings” vistas—New Zealand rewards drivers, hikers, and slow cruisers.",
     continentId: "oceania",
     matchTerms: ["new zealand", "aotearoa", "kiwi"],
     subdivisions: [
@@ -389,6 +482,11 @@ export const COUNTRIES: Country[] = [
   {
     slug: "united-arab-emirates",
     name: "United Arab Emirates",
+    imageUrl:
+      "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=1200&q=80",
+    imageAlt: "Modern Dubai skyline along the waterfront at dusk",
+    description:
+      "Dubai and Abu Dhabi pair record-setting architecture, desert excursions, family theme parks, and seamless stopover luxury.",
     continentId: "middle-east",
     matchTerms: ["uae", "emirates", "dubai", "abu dhabi"],
     subdivisions: [
@@ -407,6 +505,11 @@ export const COUNTRIES: Country[] = [
   {
     slug: "egypt",
     name: "Egypt",
+    imageUrl:
+      "https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?auto=format&fit=crop&w=1200&q=80",
+    imageAlt: "Ancient stone monuments in a wide desert landscape",
+    description:
+      "Nile cruises, tomb-lined valleys, and Red Sea diving—Egypt remains the bucket-list bridge between antiquity and beach time.",
     continentId: "africa",
     matchTerms: ["egypt", "egyptian"],
     subdivisions: [
@@ -425,6 +528,11 @@ export const COUNTRIES: Country[] = [
   {
     slug: "south-africa",
     name: "South Africa",
+    imageUrl:
+      "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1200&q=80",
+    imageAlt: "Layered hills and valleys in soft morning light",
+    description:
+      "Big-five safaris, the Cape’s wine routes, and dramatic coastlines—South Africa is Africa’s most varied self-drive and fly-in combo.",
     continentId: "africa",
     matchTerms: ["south africa", "cape town"],
     subdivisions: [
@@ -443,6 +551,11 @@ export const COUNTRIES: Country[] = [
   {
     slug: "peru",
     name: "Peru",
+    imageUrl:
+      "https://images.unsplash.com/photo-1559827260-dc66d52bef19?auto=format&fit=crop&w=1200&q=80",
+    imageAlt: "Snow-dusted peaks above clouds at sunrise",
+    description:
+      "Lima’s food scene, Inca trails, weaving villages, and Amazon gateways—Peru compresses huge altitude swings into one itinerary.",
     continentId: "south-america",
     matchTerms: ["peru", "peruvian"],
     subdivisions: [

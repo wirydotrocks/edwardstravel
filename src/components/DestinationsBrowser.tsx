@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useMemo } from "react";
@@ -7,6 +8,9 @@ import { useCallback, useMemo } from "react";
 export type DestinationCountryCard = {
   slug: string;
   name: string;
+  imageUrl: string;
+  imageAlt: string;
+  description: string;
   continentId: string;
   continentName: string;
   /** Lowercase string for search (country, slugs, subdivision names). */
@@ -20,6 +24,62 @@ type SortMode = "alphabetical" | "continent";
 
 function readSort(raw: string | null): SortMode {
   return raw === "continent" ? "continent" : "alphabetical";
+}
+
+function DestinationCountryCardItem({
+  c,
+  showContinentLabel,
+}: {
+  c: DestinationCountryCard;
+  showContinentLabel: boolean;
+}) {
+  return (
+    <li>
+      <Link
+        href={`/destinations/${c.slug}`}
+        className="group block overflow-hidden rounded-2xl border border-[var(--color-border)] bg-white shadow-sm transition hover:border-[var(--color-ocean)]/40 hover:shadow-md"
+      >
+        <div className="relative aspect-[16/10] bg-[var(--color-sand-muted)]">
+          <Image
+            src={c.imageUrl}
+            alt={c.imageAlt}
+            fill
+            quality={90}
+            className="object-cover transition duration-500 ease-out group-hover:scale-[1.03]"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 380px"
+          />
+          <div
+            className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[var(--color-ocean-deep)]/35 via-transparent to-transparent"
+            aria-hidden
+          />
+        </div>
+        <div className="p-5">
+          <span className="font-serif text-lg font-semibold text-[var(--color-ocean-deep)] group-hover:text-[var(--color-ocean)]">
+            {c.name}
+          </span>
+          {showContinentLabel ? (
+            <p className="mt-1 text-xs font-medium uppercase tracking-wider text-[var(--color-muted)]">
+              {c.continentName}
+            </p>
+          ) : null}
+          <p className="mt-3 text-sm leading-relaxed text-[var(--color-muted)] line-clamp-3">
+            {c.description}
+          </p>
+          <p className="mt-4 text-sm text-[var(--color-muted)]">
+            <span className="font-medium text-[var(--color-ink)]">
+              {c.subdivisionCount} region{c.subdivisionCount === 1 ? "" : "s"}
+            </span>
+            {c.postCount > 0 ? (
+              <span className="text-[var(--color-ocean)]">
+                {" "}
+                · {c.postCount} stor{c.postCount === 1 ? "y" : "ies"}
+              </span>
+            ) : null}
+          </p>
+        </div>
+      </Link>
+    </li>
+  );
 }
 
 export function DestinationsBrowser({
@@ -77,6 +137,8 @@ export function DestinationsBrowser({
     return { mode: "continent" as const, groups };
   }, [filtered, sort]);
 
+  const showContinentOnCards = sorted.mode === "alphabetical";
+
   return (
     <div className="mt-10 space-y-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-end">
@@ -117,30 +179,13 @@ export function DestinationsBrowser({
           all locations.
         </p>
       ) : sorted.mode === "alphabetical" ? (
-        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
           {sorted.groups[0].items.map((c) => (
-            <li key={c.slug}>
-              <Link
-                href={`/destinations/${c.slug}`}
-                className="block rounded-2xl border border-[var(--color-border)] bg-white p-5 shadow-sm transition hover:border-[var(--color-ocean)]/40 hover:shadow-md"
-              >
-                <span className="font-serif text-lg font-semibold text-[var(--color-ocean-deep)]">
-                  {c.name}
-                </span>
-                <p className="mt-1 text-xs text-[var(--color-muted)]">
-                  {c.continentName}
-                </p>
-                <p className="mt-3 text-sm text-[var(--color-muted)]">
-                  {c.subdivisionCount} areas
-                  {c.postCount > 0 ? (
-                    <span className="text-[var(--color-ocean)]">
-                      {" "}
-                      · {c.postCount} stor{c.postCount === 1 ? "y" : "ies"}
-                    </span>
-                  ) : null}
-                </p>
-              </Link>
-            </li>
+            <DestinationCountryCardItem
+              key={c.slug}
+              c={c}
+              showContinentLabel={showContinentOnCards}
+            />
           ))}
         </ul>
       ) : (
@@ -150,28 +195,13 @@ export function DestinationsBrowser({
               <h2 className="border-b border-[var(--color-border)] pb-2 font-serif text-xl font-semibold text-[var(--color-ocean-deep)]">
                 {g.label}
               </h2>
-              <ul className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <ul className="mt-4 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
                 {g.items.map((c) => (
-                  <li key={c.slug}>
-                    <Link
-                      href={`/destinations/${c.slug}`}
-                      className="block rounded-2xl border border-[var(--color-border)] bg-white p-5 shadow-sm transition hover:border-[var(--color-ocean)]/40 hover:shadow-md"
-                    >
-                      <span className="font-serif text-lg font-semibold text-[var(--color-ocean-deep)]">
-                        {c.name}
-                      </span>
-                      <p className="mt-3 text-sm text-[var(--color-muted)]">
-                        {c.subdivisionCount} areas
-                        {c.postCount > 0 ? (
-                          <span className="text-[var(--color-ocean)]">
-                            {" "}
-                            · {c.postCount} stor
-                            {c.postCount === 1 ? "y" : "ies"}
-                          </span>
-                        ) : null}
-                      </p>
-                    </Link>
-                  </li>
+                  <DestinationCountryCardItem
+                    key={c.slug}
+                    c={c}
+                    showContinentLabel={showContinentOnCards}
+                  />
                 ))}
               </ul>
             </section>

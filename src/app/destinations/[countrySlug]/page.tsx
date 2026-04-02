@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { BlogFeed } from "@/components/BlogFeed";
@@ -27,9 +28,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { countrySlug } = await params;
   const country = getCountryBySlug(countrySlug);
   if (!country) return { title: "Destination" };
+  const desc =
+    country.description.length > 155
+      ? `${country.description.slice(0, 152).trim()}…`
+      : country.description;
   return {
     title: `${country.name} | Destinations`,
-    description: `Places and stories for ${country.name} from Edwards Travel.`,
+    description: desc,
   };
 }
 
@@ -71,9 +76,25 @@ export default async function DestinationCountryPage({ params }: Props) {
       <h1 className="mt-4 font-serif text-4xl font-semibold text-[var(--color-ocean-deep)]">
         {country.name}
       </h1>
-      <p className="mt-3 max-w-2xl text-[var(--color-muted)]">
-        Choose a region for more focused stories, or browse everything we match
-        to {country.name} from the feed.
+
+      <div className="relative mt-6 aspect-[21/9] max-h-[min(360px,50vw)] w-full overflow-hidden rounded-2xl bg-[var(--color-sand-muted)] shadow-md">
+        <Image
+          src={country.imageUrl}
+          alt={country.imageAlt}
+          fill
+          priority
+          quality={95}
+          className="object-cover"
+          sizes="(max-width: 1152px) 100vw, 1152px"
+        />
+      </div>
+
+      <p className="mt-6 max-w-3xl text-lg leading-relaxed text-[var(--color-muted)]">
+        {country.description}
+      </p>
+      <p className="mt-3 max-w-2xl text-sm text-[var(--color-muted)]">
+        Choose a region below for more focused stories, or scroll for everything
+        we currently match to {country.name} from the feed.
       </p>
 
       <section className="mt-10">

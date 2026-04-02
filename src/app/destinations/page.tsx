@@ -24,6 +24,7 @@ export const revalidate = 300;
 function searchIndexForCountry(c: (typeof COUNTRIES)[number]): string {
   const parts = [
     c.name,
+    c.description,
     c.slug.replace(/-/g, " "),
     ...c.subdivisions.flatMap((s) => [
       s.name,
@@ -54,6 +55,9 @@ export default async function DestinationsPage() {
     return {
       slug: c.slug,
       name: c.name,
+      imageUrl: c.imageUrl,
+      imageAlt: c.imageAlt,
+      description: c.description,
       continentId: c.continentId,
       continentName: cont?.name ?? c.continentId,
       searchIndex: searchIndexForCountry(c),
