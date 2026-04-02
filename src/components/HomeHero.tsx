@@ -79,11 +79,12 @@ export function HomeHero() {
           Edward&apos;s Travel
         </p>
         <h1 className="mt-5 max-w-3xl font-serif text-4xl font-semibold leading-tight tracking-tight text-white [text-shadow:_0_2px_12px_rgba(0,0,0,0.5),0_4px_24px_rgba(0,0,0,0.28)] sm:text-5xl lg:text-6xl">
-          Go farther with a plan that feels effortless.
+          Go further with a plan that feels effortless.
         </h1>
         <p className="mt-5 max-w-2xl text-lg text-white [text-shadow:_0_1px_8px_rgba(0,0,0,0.42),0_2px_16px_rgba(0,0,0,0.22)]">
-          Discover experiences and destinations worth slowing down for. Tell us
-          where you&apos;d like to go, and we&apos;ll help you get there.
+          Discover experiences and destinations worth slowing down for.
+          <br />
+          Tell us where you&apos;d like to go, and we&apos;ll help you get there.
         </p>
         <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
           <Link

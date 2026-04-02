@@ -107,7 +107,9 @@ export default function Home() {
           </h2>
           <p className="mt-4 text-white/85">
             Share your destination ideas, month, and how long you&apos;d like to
-            be away—we&apos;ll follow up with thoughtful options.
+            be away.
+            <br />
+            We&apos;ll follow up with thoughtful options.
           </p>
           <Link
             href="/contact"
