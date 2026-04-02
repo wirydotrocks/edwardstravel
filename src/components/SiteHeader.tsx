@@ -9,11 +9,13 @@ import { mainNav } from "@/lib/nav";
 const ctaClassName =
   "shrink-0 rounded-full bg-[var(--color-coral)] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:brightness-105";
 
-/** When #why-travel’s top passes under the header bar, use solid styles */
+/** When a light section reaches the header bar (after the hero), use solid styles */
 const HEADER_BAR_PX = 64;
 
 function computeHomeHeaderSolid() {
-  const section = document.getElementById("why-travel");
+  const stories = document.getElementById("stories-inspiration");
+  const whyTravel = document.getElementById("why-travel");
+  const section = stories ?? whyTravel;
   if (!section) {
     return window.scrollY > window.innerHeight * 0.75;
   }

@@ -1,8 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
+import { BlogFeed } from "@/components/BlogFeed";
 import { HomeAboutSection } from "@/components/HomeAboutSection";
 import { HomeHero } from "@/components/HomeHero";
 import { HomeSpecialsGroupsSection } from "@/components/HomeSpecialsGroupsSection";
+import { loadEdwardsRssSafe } from "@/lib/edwards-rss";
+
+export const revalidate = 300;
 
 const highlights = [
   {
@@ -29,13 +33,19 @@ const highlights = [
   },
 ];
 
-export default function Home() {
+export default async function Home() {
+  const feed = await loadEdwardsRssSafe();
+  const storyItems = feed.ok ? feed.items.slice(0, 3) : [];
+
   return (
     <div className="flex flex-1 flex-col">
       <HomeHero />
 
-      {/* Stories first — why visitors came to the site */}
-      <section className="border-b border-[var(--color-border)] bg-[var(--color-sand)] py-16 sm:py-20">
+      {/* Stories first — why visitors came to the site; id used by SiteHeader for solid bar */}
+      <section
+        id="stories-inspiration"
+        className="border-b border-[var(--color-border)] bg-[var(--color-sand)] py-16 sm:py-20"
+      >
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
             <div>
@@ -43,9 +53,9 @@ export default function Home() {
                 Stories &amp; Inspiration
               </h2>
               <p className="mt-3 max-w-xl text-[var(--color-muted)]">
-                Browse travel stories on the blog — synced from our editorial
-                feed — alongside experiences and destinations as we grow the
-                site.
+                Latest posts from our RSS feed. Open any story to read the full
+                article on the blog, or explore experiences and destinations
+                as you plan.
               </p>
             </div>
             <Link
@@ -55,29 +65,23 @@ export default function Home() {
               View blog →
             </Link>
           </div>
-          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {["Coastal escapes", "Urban long weekends", "Family-friendly tours"].map(
-              (title) => (
-                <article
-                  key={title}
-                  className="overflow-hidden rounded-2xl border border-[var(--color-border)] bg-white shadow-sm"
-                >
-                  <div className="aspect-[4/3] bg-[var(--color-sand-muted)]" />
-                  <div className="p-5">
-                    <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-ocean)]">
-                      Preview
-                    </p>
-                    <h3 className="mt-2 font-serif text-lg font-semibold text-[var(--color-ink)]">
-                      {title}
-                    </h3>
-                    <p className="mt-2 text-sm text-[var(--color-muted)]">
-                      See the blog for live posts from our RSS feed.
-                    </p>
-                  </div>
-                </article>
-              ),
-            )}
-          </div>
+          {!feed.ok ? (
+            <div
+              className="mt-10 rounded-2xl border border-[var(--color-border)] bg-white px-5 py-4 text-sm text-[var(--color-muted)]"
+              role="alert"
+            >
+              <p className="font-medium text-[var(--color-ink)]">
+                We couldn&apos;t load stories right now.
+              </p>
+              <p className="mt-1">{feed.message}</p>
+            </div>
+          ) : storyItems.length > 0 ? (
+            <BlogFeed items={storyItems} />
+          ) : (
+            <p className="mt-10 text-[var(--color-muted)]">
+              No posts are in the feed yet. Check back soon.
+            </p>
+          )}
         </div>
       </section>
 
