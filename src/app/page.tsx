@@ -43,15 +43,16 @@ export default function Home() {
                 Stories &amp; Inspiration
               </h2>
               <p className="mt-3 max-w-xl text-[var(--color-muted)]">
-                Soon you&apos;ll browse experiences, destinations, and blog
-                posts from a single source—sorted the way you like.
+                Browse travel stories on the blog — synced from our editorial
+                feed — alongside experiences and destinations as we grow the
+                site.
               </p>
             </div>
             <Link
               href="/blog"
               className="inline-flex w-fit items-center text-sm font-semibold text-[var(--color-ocean)] underline-offset-4 hover:underline"
             >
-              View blog (coming soon) →
+              View blog →
             </Link>
           </div>
           <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -70,7 +71,7 @@ export default function Home() {
                       {title}
                     </h3>
                     <p className="mt-2 text-sm text-[var(--color-muted)]">
-                      Content will connect to your RSS feed in a later step.
+                      See the blog for live posts from our RSS feed.
                     </p>
                   </div>
                 </article>

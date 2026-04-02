@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Experiences",
@@ -12,8 +13,14 @@ export default function ExperiencesPage() {
         Experiences
       </h1>
       <p className="mt-4 max-w-2xl text-[var(--color-muted)]">
-        This page will list items from your RSS feed in their natural order
-        (unsorted). We&apos;ll wire up the feed in a follow-up step.
+        Curated trips and travel ideas will live here. Blog-style stories are on{" "}
+        <Link
+          href="/blog"
+          className="font-medium text-[var(--color-ocean)] underline-offset-2 hover:underline"
+        >
+          the blog
+        </Link>
+        .
       </p>
     </main>
   );
