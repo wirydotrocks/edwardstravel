@@ -19,15 +19,16 @@ export default async function BlogPage() {
         Blog
       </h1>
       <p className="mt-4 max-w-2xl text-[var(--color-muted)]">
-        Posts from our RSS feed that are tagged for the blog. Open any card to read
-        the full article on this site. For cruises and product stories, see{" "}
+        Open any card to read the full article on this site. 
+        <br />
+        For cruises and stories, see{" "}
         <a
           href="/experiences"
           className="font-medium text-[var(--color-ocean)] underline-offset-2 hover:underline"
         >
           Experiences
         </a>
-        ; for place-focused pieces, see{" "}
+        ; for place focused pieces, see{" "}
         <a
           href="/destinations"
           className="font-medium text-[var(--color-ocean)] underline-offset-2 hover:underline"

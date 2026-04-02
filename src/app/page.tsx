@@ -98,7 +98,7 @@ export default async function Home() {
           <p className="mt-3 max-w-2xl text-[var(--color-muted)]">
             Whether you already have a dream destination or you&apos;re still
             exploring ideas, we&apos;re here to turn inspiration into a
-            well-organized trip.
+            well organized trip.
           </p>
           <ul className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
             {highlights.map((item) => (

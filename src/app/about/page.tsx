@@ -16,12 +16,12 @@ export default function AboutPage() {
         </h1>
         <p className="mt-5 max-w-2xl text-lg text-[var(--color-muted)]">
           Edwards Travel helps you explore the world with confidence. We plan
-          itineraries around how you like to travel—whether that means relaxing
-          resorts, active adventures, or cultural deep dives—and we stay with you
+          itineraries around how you like to travel, whether that means relaxing
+          resorts, active adventures, or cultural deep dives. We will stay with you
           from first ideas through your return home.
         </p>
         <p className="mt-4 max-w-2xl text-[var(--color-muted)]">
-          Meet our team below—flip a card to read each profile and contact details.
+          Meet our team below. Flip a card to read each profile and contact details.
         </p>
       </div>
 

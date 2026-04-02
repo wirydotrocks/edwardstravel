@@ -20,8 +20,12 @@ export default async function ExperiencesPage() {
         Experiences
       </h1>
       <p className="mt-4 max-w-2xl text-[var(--color-muted)]">
-        Stories from our RSS feed that are categorized for experiences—such as
-        cruises and all-inclusive resorts. Each post opens on this site. Browse{" "}
+        Experiences that others have enjoyed on vacation.
+        <br />
+        Look through each experience to see what others have enjoyed.
+        <br />
+
+        Browse{" "}
         <Link
           href="/destinations"
           className="font-medium text-[var(--color-ocean)] underline-offset-2 hover:underline"

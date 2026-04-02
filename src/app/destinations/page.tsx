@@ -73,9 +73,12 @@ export default async function DestinationsPage() {
         Destinations
       </h1>
       <p className="mt-4 max-w-2xl text-[var(--color-muted)]">
-        Explore by country and region. Each country groups related areas so you
-        can go deeper without dozens of flat pages. Stories come from your RSS
-        feed when titles and categories mention a place. See also{" "}
+        Explore by country and region. 
+        <br />
+        Each country groups related areas so you
+        can go deeper without getting lost.
+        <br />
+         See also{" "}
         <Link
           href="/experiences"
           className="font-medium text-[var(--color-ocean)] underline-offset-2 hover:underline"
