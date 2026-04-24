@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { RssFeedFromApi } from "@/components/RssFeedFromApi";
 
 export const metadata: Metadata = {
   title: "Specials",
@@ -13,9 +14,14 @@ export default function SpecialsPage() {
         Specials
       </h1>
       <p className="mt-4 max-w-2xl text-[var(--color-muted)]">
-        Find the best travel specials with Edwards Travel. This page will soon
-        highlight hot deals and limited-time offers to plan your next trip.
+        Find the best travel specials with Edwards Travel.
       </p>
+      <RssFeedFromApi
+        endpoint="/api/specials"
+        searchLabel="Search specials"
+        searchPlaceholder="Supplier, destination, offer, or keyword..."
+        errorMessage="Unable to load specials."
+      />
     </main>
   );
 }

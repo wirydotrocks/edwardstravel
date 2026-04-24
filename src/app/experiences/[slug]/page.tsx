@@ -2,10 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import {
-  sanitizeBlogHtml,
-  stripFirstInlineImage,
-} from "@/lib/blog-html";
+import { sanitizeBlogHtml, stripFirstInlineImage } from "@/lib/blog-html";
 import { formatRssPostDate, type EdwardsRssItem } from "@/lib/edwards-rss";
 import { getInternalBaseUrl } from "@/lib/internal-api";
 import {
@@ -20,19 +17,19 @@ type ListResponse =
 type PostResponse = { ok: true; item: EdwardsRssItem } | { ok: false; message: string };
 
 export const revalidate = 86400;
-
 export const dynamicParams = true;
 
-async function getBlogItemBySlug(
+async function getExperienceItemBySlug(
   slug: string,
 ): Promise<TatPublicListPost | undefined> {
   const baseUrl = await getInternalBaseUrl();
-  const res = await fetch(`${baseUrl}/api/blog`, { next: { revalidate: 86400 } });
+  const res = await fetch(`${baseUrl}/api/experiences`, {
+    next: { revalidate: 86400 },
+  });
   if (!res.ok) return undefined;
   const data = (await res.json()) as ListResponse;
   if (!data.ok) return undefined;
-  const items = data.items;
-  return items.find((item) => item.slug === slug);
+  return data.items.find((item) => item.slug === slug);
 }
 
 async function getPostById(id: string): Promise<EdwardsRssItem | undefined> {
@@ -53,10 +50,8 @@ export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const item = await getBlogItemBySlug(slug);
-  if (!item) {
-    return { title: "Post not found" };
-  }
+  const item = await getExperienceItemBySlug(slug);
+  if (!item) return { title: "Experience not found" };
   return {
     title: item.title,
     description: tatPublicListDescription(item),
@@ -71,41 +66,40 @@ export async function generateMetadata({
   };
 }
 
-export default async function BlogPostPage({ params }: PageProps) {
+export default async function ExperiencePostPage({ params }: PageProps) {
   const { slug } = await params;
-  const summaryItem = await getBlogItemBySlug(slug);
+  const summaryItem = await getExperienceItemBySlug(slug);
   if (!summaryItem) notFound();
   const item = await getPostById(summaryItem.id);
   if (!item) notFound();
-  if (item.cmsKind && item.cmsKind !== "blog") notFound();
-
-  const backHref = "/blog";
-  const sectionLabel = "Blog";
+  if (item.cmsKind && item.cmsKind !== "product") notFound();
 
   const sourceHtml = item.contentHtml;
   const rawBodyHtml =
     item.imageUrl && sourceHtml.trim().length > 0
       ? stripFirstInlineImage(sourceHtml)
       : sourceHtml;
-  const sanitizedBodyHtml =
+  const bodyHtml =
     rawBodyHtml.trim().length > 0 ? sanitizeBlogHtml(rawBodyHtml) : null;
-  const bodyHtml = sanitizedBodyHtml;
 
   return (
     <main className="mx-auto max-w-3xl flex-1 px-4 py-14 sm:px-6 lg:px-8">
       <p className="text-sm font-medium text-[var(--color-ocean)]">
-        <Link href={backHref} className="hover:underline">
-          {sectionLabel}
+        <Link href="/experiences" className="hover:underline">
+          Experiences
         </Link>
       </p>
+
       {item.category ? (
         <p className="mt-3 text-xs font-semibold uppercase tracking-wider text-[var(--color-muted)]">
           {item.category}
         </p>
       ) : null}
+
       <h1 className="mt-2 font-serif text-3xl font-semibold tracking-tight text-[var(--color-ocean-deep)] sm:text-4xl">
         {item.title}
       </h1>
+
       {item.publishedAt ? (
         <time
           dateTime={item.publishedAt}
@@ -136,7 +130,7 @@ export default async function BlogPostPage({ params }: PageProps) {
         />
       ) : (
         <p className="mt-10 text-[var(--color-muted)]">
-          This post doesn&apos;t have any content in the feed yet.
+          This post doesn&apos;t have any content yet.
         </p>
       )}
 

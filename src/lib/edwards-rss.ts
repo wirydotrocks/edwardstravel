@@ -14,11 +14,14 @@ export type { RssSection };
  * Override with `EDWARDS_RSS_URL` for staging or if your CMS uses another path (e.g. `/feed/`).
  */
 export const EDWARDS_RSS_URL =
-  process.env.EDWARDS_RSS_URL ?? "https://edwardstravel.com/rss";
+  process.env.EDWARDS_RSS_URL ??
+  "http://travelclub.travelsavers.com/travelclubexclusiveFeed.aspx?ext=1&type=0&imgWidth=140&cid=253472";
 
 export type EdwardsRssItem = {
+  id: string;
   slug: string;
   guid: string;
+  link: string;
   title: string;
   imageUrl: string | null;
   /** All RSS categories for this item (used to route to Experiences / Destinations / Blog) */
@@ -30,6 +33,16 @@ export type EdwardsRssItem = {
   snippet: string;
   /** Raw HTML from the feed item (sanitized before render) */
   contentHtml: string;
+  /** TAT / OnlineXpress CMS: Blog vs Product (only set for TAT-backed items) */
+  cmsKind?: "blog" | "product" | "other";
+  /** TAT `zid` when present */
+  tatZid?: string | null;
+  /** TAT `summary` (plain or HTML) for cards / API */
+  tatSummary?: string | null;
+  /** TAT `array_tags` / `tags` */
+  tatTags?: string[];
+  /** TAT `permalink` path (may be relative) */
+  tatPermalink?: string | null;
 };
 
 type ItemWithImage = Parser.Item & {
@@ -38,7 +51,7 @@ type ItemWithImage = Parser.Item & {
 
 const parser = new Parser({
   customFields: {
-    item: ["image", "category"],
+    item: ["image", "category", "content:encoded"],
   },
 });
 
@@ -107,12 +120,10 @@ function snippetFromItem(item: Parser.Item): string {
   const encoded = (item as Parser.Item & { "content:encoded"?: string })[
     "content:encoded"
   ];
-  const raw =
-    item.contentSnippet?.trim() ||
-    stripHtml(item.content || encoded || "") ||
-    "";
-  if (raw.length <= 240) return raw;
-  return `${raw.slice(0, 237).trim()}…`;
+  const fullHtml = encoded || item.content || item.contentSnippet || "";
+  const text = stripHtml(fullHtml);
+  if (text.length <= 240) return text;
+  return `${text.slice(0, 237).trim()}…`;
 }
 
 function normalizeItem(raw: Parser.Item): EdwardsRssItem {
@@ -120,7 +131,7 @@ function normalizeItem(raw: Parser.Item): EdwardsRssItem {
   const encoded = (raw as Parser.Item & { "content:encoded"?: string })[
     "content:encoded"
   ];
-  const descHtml = raw.content || encoded || "";
+  const descHtml = encoded || raw.content || "";
   const permalink = raw.link?.trim() || "#";
 
   let imageUrl =
@@ -142,8 +153,10 @@ function normalizeItem(raw: Parser.Item): EdwardsRssItem {
   const category = categories[0] ?? null;
 
   return {
+    id: guid || slugFromPermalink(permalink),
     slug: slugFromPermalink(permalink),
     guid,
+    link: permalink,
     title: raw.title?.trim() || "Untitled",
     imageUrl,
     categories,

@@ -1,4 +1,5 @@
 import sanitizeHtml from "sanitize-html";
+import { load as loadHtml } from "cheerio";
 import { maxQualityFeedImageUrl } from "@/lib/feed-image-url";
 
 /**
@@ -70,4 +71,97 @@ export function sanitizeBlogHtml(html: string): string {
       },
     },
   });
+}
+
+/**
+ * Remove the first inline image (or image wrapped in a figure/paragraph) from feed HTML.
+ * We render a dedicated hero image above the article, so this avoids duplicated imagery.
+ */
+export function stripFirstInlineImage(html: string): string {
+  let out = html;
+
+  out = out.replace(
+    /<figure\b[^>]*>\s*<img\b[^>]*>[\s\S]*?<\/figure>/i,
+    "",
+  );
+  out = out.replace(/<p\b[^>]*>\s*<img\b[^>]*>\s*<\/p>/i, "");
+  out = out.replace(/<img\b[^>]*>/i, "");
+
+  return out.trim();
+}
+
+function bestContentSelector(html: string): string | null {
+  const $ = loadHtml(html);
+
+  const candidates = [
+    ".offer-detail",
+    ".offer-content",
+    ".offer-body",
+    "article",
+    "main article",
+    "main",
+    "[role='main']",
+    ".article-content",
+    ".post-content",
+    ".entry-content",
+    ".content",
+  ];
+
+  for (const selector of candidates) {
+    const node = $(selector).first();
+    const textLen = node.text().replace(/\s+/g, " ").trim().length;
+    if (node.length > 0 && textLen > 300) {
+      return node.html()?.trim() || null;
+    }
+  }
+
+  let bestHtml: string | null = null;
+  let bestTextLen = 0;
+  $("article, main, section, div").each((_, el) => {
+    const node = $(el);
+    const textLen = node.text().replace(/\s+/g, " ").trim().length;
+    if (textLen > bestTextLen) {
+      bestTextLen = textLen;
+      bestHtml = node.html()?.trim() || null;
+    }
+  });
+
+  return bestTextLen > 300 ? bestHtml : null;
+}
+
+export async function fetchFullArticleHtml(url: string): Promise<string | null> {
+  try {
+    const res = await fetch(url, {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (compatible; EdwardsTravel/1.0)",
+        Accept: "text/html,application/xhtml+xml",
+      },
+      next: { revalidate: 86400 },
+    });
+    if (!res.ok) return null;
+
+    const pageHtml = await res.text();
+    return bestContentSelector(pageHtml);
+  } catch {
+    return null;
+  }
+}
+
+export function rewriteOfferBackLink(
+  html: string,
+  href: string,
+  label: string,
+): string {
+  const $ = loadHtml(html);
+
+  $("a").each((_, el) => {
+    const a = $(el);
+    const text = a.text().replace(/\s+/g, " ").trim().toLowerCase();
+    if (text.includes("view all offers")) {
+      a.attr("href", href);
+      a.text(label);
+    }
+  });
+
+  return $.root().html() ?? html;
 }

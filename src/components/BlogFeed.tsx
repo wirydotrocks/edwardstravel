@@ -2,11 +2,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { formatRssPostDate, type EdwardsRssItem } from "@/lib/edwards-rss";
 
-function BlogCard({ item }: { item: EdwardsRssItem }) {
+function BlogCard({ item, basePath }: { item: EdwardsRssItem; basePath: string }) {
+  const href = `${basePath}/${item.slug}`;
   return (
     <article className="flex flex-col overflow-hidden rounded-2xl border border-[var(--color-border)] bg-white shadow-sm transition hover:shadow-md">
       <Link
-        href={`/blog/${item.slug}`}
+        href={href}
         className="relative block aspect-[16/10] bg-[var(--color-sand-muted)]"
       >
         {item.imageUrl ? (
@@ -34,7 +35,7 @@ function BlogCard({ item }: { item: EdwardsRssItem }) {
         ) : null}
         <h2 className="mt-2 font-serif text-lg font-semibold leading-snug text-[var(--color-ocean-deep)]">
           <Link
-            href={`/blog/${item.slug}`}
+            href={href}
             className="hover:text-[var(--color-ocean)]"
           >
             {item.title}
@@ -54,7 +55,7 @@ function BlogCard({ item }: { item: EdwardsRssItem }) {
           </p>
         ) : null}
         <Link
-          href={`/blog/${item.slug}`}
+          href={href}
           className="mt-4 inline-flex w-fit text-sm font-semibold text-[var(--color-ocean)] underline-offset-4 hover:underline"
         >
           Read article →
@@ -64,19 +65,31 @@ function BlogCard({ item }: { item: EdwardsRssItem }) {
   );
 }
 
-export function BlogFeed({ items }: { items: EdwardsRssItem[] }) {
+export function BlogFeed({
+  items,
+  listClassName = "mt-10",
+  basePath = "/blog",
+}: {
+  items: EdwardsRssItem[];
+  /** Margin / spacing above the list (default matches standalone pages). */
+  listClassName?: string;
+  /** Destination path for item details, e.g. `/blog` or `/experiences`. */
+  basePath?: string;
+}) {
   if (items.length === 0) {
     return (
-      <p className="mt-10 text-[var(--color-muted)]">
+      <p className={`${listClassName} text-[var(--color-muted)]`}>
         No posts are available in the feed right now.
       </p>
     );
   }
 
   return (
-    <div className="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+    <div
+      className={`${listClassName} grid gap-8 sm:grid-cols-2 lg:grid-cols-3`}
+    >
       {items.map((item) => (
-        <BlogCard key={item.slug} item={item} />
+        <BlogCard key={item.id || item.slug} item={item} basePath={basePath} />
       ))}
     </div>
   );

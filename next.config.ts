@@ -23,6 +23,16 @@ const nextConfig: NextConfig = {
         hostname: "s3.amazonaws.com",
         pathname: "/**",
       },
+      {
+        protocol: "http",
+        hostname: "s3.amazonaws.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "api.americanmarketinggroup.com",
+        pathname: "/**",
+      },
     ],
   },
 };
