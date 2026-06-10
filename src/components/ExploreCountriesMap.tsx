@@ -66,6 +66,7 @@ function CountryPaths({
   onSelect,
   onHover,
   onUnhover,
+  preview = false,
 }: {
   countries: CountryFeature[];
   pathGenerator: ReturnType<typeof geoPath>;
@@ -75,6 +76,7 @@ function CountryPaths({
   onSelect: (id: string) => void;
   onHover: (id: string) => void;
   onUnhover: () => void;
+  preview?: boolean;
 }) {
   return (
     <>
@@ -92,15 +94,20 @@ function CountryPaths({
             stroke={STROKE}
             strokeWidth={0.6}
             vectorEffect="non-scaling-stroke"
-            className="cursor-pointer transition-[fill] duration-200"
+            className={
+              preview
+                ? undefined
+                : "cursor-pointer transition-[fill] duration-200"
+            }
             style={isHovered ? { fill: "#b0bcc8" } : undefined}
-            onClick={() => onSelect(id)}
-            onMouseEnter={() => onHover(id)}
-            onMouseLeave={onUnhover}
-            onFocus={() => onHover(id)}
-            onBlur={onUnhover}
-            tabIndex={0}
-            aria-label={countryName(geo)}
+            onClick={preview ? undefined : () => onSelect(id)}
+            onMouseEnter={preview ? undefined : () => onHover(id)}
+            onMouseLeave={preview ? undefined : onUnhover}
+            onFocus={preview ? undefined : () => onHover(id)}
+            onBlur={preview ? undefined : onUnhover}
+            tabIndex={preview ? -1 : 0}
+            aria-hidden={preview ? true : undefined}
+            aria-label={preview ? undefined : countryName(geo)}
           />
         );
       })}
@@ -108,7 +115,7 @@ function CountryPaths({
   );
 }
 
-export function ExploreCountriesMap() {
+export function ExploreCountriesMap({ preview = false }: { preview?: boolean } = {}) {
   const containerRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const mapGroupRef = useRef<SVGGElement>(null);
@@ -158,6 +165,8 @@ export function ExploreCountriesMap() {
   }, [countries, size.height, size.width]);
 
   useEffect(() => {
+    if (preview) return;
+
     const svgEl = svgRef.current;
     const mapGroupEl = mapGroupRef.current;
     if (!svgEl || !mapGroupEl) return;
@@ -213,7 +222,7 @@ export function ExploreCountriesMap() {
       svg.on(".zoom", null);
       zoomBehaviorRef.current = null;
     };
-  }, [size.height, size.width]);
+  }, [preview, size.height, size.width]);
 
   const zoomIn = () => {
     const svgEl = svgRef.current;
@@ -250,39 +259,41 @@ export function ExploreCountriesMap() {
   const canZoomOut = zoomLevel > MIN_ZOOM + 0.01;
 
   return (
-    <div className="space-y-4">
+    <div className={preview ? undefined : "space-y-4"}>
       <div
         ref={containerRef}
-        className="relative w-full overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm"
+        className={`relative w-full overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm ${preview ? "pointer-events-none" : ""}`}
       >
-        <div className="absolute right-3 top-3 z-10 flex flex-col gap-1.5">
-          <button
-            type="button"
-            onClick={zoomIn}
-            className={zoomButtonClass}
-            aria-label="Zoom in"
-          >
-            +
-          </button>
-          <button
-            type="button"
-            onClick={zoomOut}
-            disabled={!canZoomOut}
-            className={`${zoomButtonClass} disabled:cursor-not-allowed disabled:opacity-40`}
-            aria-label="Zoom out"
-          >
-            −
-          </button>
-          <button
-            type="button"
-            onClick={resetZoom}
-            disabled={!canZoomOut}
-            className={`${zoomButtonClass} text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-40`}
-            aria-label="Reset zoom"
-          >
-            ⟲
-          </button>
-        </div>
+        {!preview ? (
+          <div className="absolute right-3 top-3 z-10 flex flex-col gap-1.5">
+            <button
+              type="button"
+              onClick={zoomIn}
+              className={zoomButtonClass}
+              aria-label="Zoom in"
+            >
+              +
+            </button>
+            <button
+              type="button"
+              onClick={zoomOut}
+              disabled={!canZoomOut}
+              className={`${zoomButtonClass} disabled:cursor-not-allowed disabled:opacity-40`}
+              aria-label="Zoom out"
+            >
+              −
+            </button>
+            <button
+              type="button"
+              onClick={resetZoom}
+              disabled={!canZoomOut}
+              className={`${zoomButtonClass} text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-40`}
+              aria-label="Reset zoom"
+            >
+              ⟲
+            </button>
+          </div>
+        ) : null}
 
         <svg
           ref={svgRef}
@@ -290,8 +301,13 @@ export function ExploreCountriesMap() {
           height={size.height}
           viewBox={`0 0 ${size.width} ${size.height}`}
           role="img"
-          aria-label="Interactive world map. Click a country to select it. Scroll or pinch to zoom, drag to pan."
-          className={`block w-full touch-none select-none ${isPanning ? "cursor-grabbing" : "cursor-grab"}`}
+          aria-hidden={preview ? true : undefined}
+          aria-label={
+            preview
+              ? undefined
+              : "Interactive world map. Click a country to select it. Scroll or pinch to zoom, drag to pan."
+          }
+          className={`block w-full select-none ${preview ? "" : `touch-none ${isPanning ? "cursor-grabbing" : "cursor-grab"}`}`}
         >
           <rect
             width={size.width}
@@ -310,6 +326,7 @@ export function ExploreCountriesMap() {
                   selectedId={selectedId}
                   hoveredId={hoveredId}
                   keyPrefix={`copy-${copy}`}
+                  preview={preview}
                   onSelect={(id) =>
                     setSelectedId((prev) => (prev === id ? null : id))
                   }
@@ -322,35 +339,37 @@ export function ExploreCountriesMap() {
         </svg>
       </div>
 
-      <div className="flex min-h-[1.5rem] flex-wrap items-center gap-x-2 gap-y-2 text-sm text-[var(--color-muted)]">
-        {selectedCountry ? (
-          <>
-            <span className="font-medium text-[var(--color-ocean-deep)]">
-              {countryName(selectedCountry)}
+      {!preview ? (
+        <div className="flex min-h-[1.5rem] flex-wrap items-center gap-x-2 gap-y-2 text-sm text-[var(--color-muted)]">
+          {selectedCountry ? (
+            <>
+              <span className="font-medium text-[var(--color-ocean-deep)]">
+                {countryName(selectedCountry)}
+              </span>
+              <span aria-hidden>·</span>
+              <button
+                type="button"
+                className="inline-flex items-center justify-center rounded-full bg-[var(--color-coral)] px-4 py-1.5 text-sm font-semibold text-white shadow-sm transition hover:brightness-105"
+              >
+                Look up popular activities
+              </button>
+            </>
+          ) : labelCountry ? (
+            <>
+              <span className="font-medium text-[var(--color-ocean-deep)]">
+                {countryName(labelCountry)}
+              </span>
+              <span aria-hidden>·</span>
+              <span>click to select</span>
+            </>
+          ) : (
+            <span>
+              Click a country on the map to highlight it. Scroll to zoom, drag to
+              pan.
             </span>
-            <span aria-hidden>·</span>
-            <button
-              type="button"
-              className="inline-flex items-center justify-center rounded-full bg-[var(--color-coral)] px-4 py-1.5 text-sm font-semibold text-white shadow-sm transition hover:brightness-105"
-            >
-              Look up popular activities
-            </button>
-          </>
-        ) : labelCountry ? (
-          <>
-            <span className="font-medium text-[var(--color-ocean-deep)]">
-              {countryName(labelCountry)}
-            </span>
-            <span aria-hidden>·</span>
-            <span>click to select</span>
-          </>
-        ) : (
-          <span>
-            Click a country on the map to highlight it. Scroll to zoom, drag to
-            pan.
-          </span>
-        )}
-      </div>
+          )}
+        </div>
+      ) : null}
     </div>
   );
 }

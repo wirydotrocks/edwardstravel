@@ -1,12 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
-import { BlogFeed } from "@/components/BlogFeed";
 import { HomeAboutSection } from "@/components/HomeAboutSection";
+import { HomeExploreCountriesPreview } from "@/components/HomeExploreCountriesPreview";
 import { HomeHero } from "@/components/HomeHero";
 import { HomeSpecialsGroupsSection } from "@/components/HomeSpecialsGroupsSection";
-import { loadEdwardsRssSafe } from "@/lib/edwards-rss";
-
-export const revalidate = 300;
 
 const highlights = [
   {
@@ -33,55 +30,41 @@ const highlights = [
   },
 ];
 
-export default async function Home() {
-  const feed = await loadEdwardsRssSafe();
-  const storyItems = feed.ok ? feed.items.slice(0, 3) : [];
-
+export default function Home() {
   return (
     <div className="flex flex-1 flex-col">
       <HomeHero />
 
-      {/* Stories first — why visitors came to the site; id used by SiteHeader for solid bar */}
+      {/* Explore map promo; id used by SiteHeader for solid bar */}
       <section
-        id="stories-inspiration"
+        id="explore-countries"
         className="border-b border-[var(--color-border)] bg-[var(--color-sand)] py-16 sm:py-20"
       >
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+          <div className="grid gap-10 lg:grid-cols-2 lg:items-center">
             <div>
               <h2 className="font-serif text-3xl font-semibold tracking-tight text-[var(--color-ocean-deep)] sm:text-4xl">
-                Stories &amp; Inspiration
+                Explore Countries
               </h2>
+              <p className="mt-4 max-w-xl text-[var(--color-muted)]">
+                Not sure where to start? Our interactive world map lets you
+                click any country to highlight, zoom and pan around the globe
+                to discover what you can do.
+              </p>
               <p className="mt-3 max-w-xl text-[var(--color-muted)]">
-                Latest posts from our RSS feed. Open any story to read the full
-                article on the blog, or explore experiences and destinations
-                as you plan.
+                Pick a destination that catches your eye, then look up popular
+                activities and start shaping a trip that fits how you like to
+                travel.
               </p>
+              <Link
+                href="/explore-countries"
+                className="mt-8 inline-flex items-center justify-center rounded-full bg-[var(--color-coral)] px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:brightness-105"
+              >
+                Explore the map
+              </Link>
             </div>
-            <Link
-              href="/blog"
-              className="inline-flex w-fit items-center text-sm font-semibold text-[var(--color-ocean)] underline-offset-4 hover:underline"
-            >
-              View blog →
-            </Link>
+            <HomeExploreCountriesPreview />
           </div>
-          {!feed.ok ? (
-            <div
-              className="mt-10 rounded-2xl border border-[var(--color-border)] bg-white px-5 py-4 text-sm text-[var(--color-muted)]"
-              role="alert"
-            >
-              <p className="font-medium text-[var(--color-ink)]">
-                We couldn&apos;t load stories right now.
-              </p>
-              <p className="mt-1">{feed.message}</p>
-            </div>
-          ) : storyItems.length > 0 ? (
-            <BlogFeed items={storyItems} />
-          ) : (
-            <p className="mt-10 text-[var(--color-muted)]">
-              No posts are in the feed yet. Check back soon.
-            </p>
-          )}
         </div>
       </section>
 
