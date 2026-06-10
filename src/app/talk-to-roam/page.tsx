@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { RoamChat } from "@/components/RoamChat";
 
 export const metadata: Metadata = {
@@ -22,7 +23,15 @@ export default function TalkToRoamPage() {
       </p>
 
       <div className="mt-8">
-        <RoamChat />
+        <Suspense
+          fallback={
+            <div className="flex h-[min(640px,calc(100dvh-13rem))] items-center justify-center rounded-2xl border border-[var(--color-border)] bg-white text-sm text-[var(--color-muted)]">
+              Loading chat…
+            </div>
+          }
+        >
+          <RoamChat />
+        </Suspense>
       </div>
     </main>
   );

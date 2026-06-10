@@ -3,7 +3,7 @@ import { convertToModelMessages, streamText, type UIMessage } from "ai";
 import { ROAM_SYSTEM_PROMPT } from "@/lib/roam-prompt";
 
 export const runtime = "nodejs";
-export const maxDuration = 60;
+export const maxDuration = 120;
 
 export async function POST(req: Request) {
   const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY?.trim();
@@ -32,7 +32,14 @@ export async function POST(req: Request) {
     model: google(modelId),
     system: ROAM_SYSTEM_PROMPT,
     messages: await convertToModelMessages(messages),
-    maxOutputTokens: 4096,
+    maxOutputTokens: 8192,
+    providerOptions: {
+      google: {
+        thinkingConfig: {
+          thinkingBudget: 0,
+        },
+      },
+    },
   });
 
   return result.toUIMessageStreamResponse();

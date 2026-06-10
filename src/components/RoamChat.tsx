@@ -3,9 +3,10 @@
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { parseRoamAssistantReply } from "@/lib/roam-message-format";
-import { ROAM_WELCOME_MESSAGE } from "@/lib/roam-prompt";
+import { ROAM_WELCOME_MESSAGE, roamActivitiesPrompt } from "@/lib/roam-prompt";
 
 function messageText(message: UIMessage): string {
   return message.parts
@@ -72,9 +73,22 @@ const welcomeMessage: UIMessage = {
 const STICK_TO_BOTTOM_THRESHOLD_PX = 96;
 
 export function RoamChat() {
-  const [input, setInput] = useState("");
+  const searchParams = useSearchParams();
+  const countryFromUrl = searchParams.get("country")?.trim() ?? "";
+  const [input, setInput] = useState(() =>
+    countryFromUrl ? roamActivitiesPrompt(countryFromUrl) : "",
+  );
   const [stickToBottom, setStickToBottom] = useState(true);
   const messagesScrollRef = useRef<HTMLDivElement>(null);
+  const seededFromUrl = useRef(Boolean(countryFromUrl));
+
+  useEffect(() => {
+    if (seededFromUrl.current) return;
+    const country = searchParams.get("country")?.trim();
+    if (!country) return;
+    setInput(roamActivitiesPrompt(country));
+    seededFromUrl.current = true;
+  }, [searchParams]);
   const transport = useMemo(
     () => new DefaultChatTransport({ api: "/api/roam" }),
     [],
@@ -123,7 +137,7 @@ export function RoamChat() {
         onScroll={handleMessagesScroll}
         className="flex-1 min-h-0 space-y-4 overflow-y-auto overscroll-contain px-4 py-5 sm:px-6"
       >
-        {messages.map((message) => {
+        {messages.map((message, messageIndex) => {
           const text = messageText(message);
           if (!text) return null;
 
@@ -137,8 +151,11 @@ export function RoamChat() {
             );
           }
 
-          const { ideas, summary } = parseRoamAssistantReply(text);
+          const { ideas, summary, looksIncomplete } = parseRoamAssistantReply(text);
           const ideaBubbles = ideas.length > 0 ? ideas : [text];
+          const isLatestAssistantReply =
+            message.role === "assistant" &&
+            messageIndex === messages.length - 1;
 
           return (
             <div key={message.id} className="space-y-3">
@@ -155,6 +172,12 @@ export function RoamChat() {
                     ))}
                   </ul>
                 </RoamBubble>
+              ) : null}
+              {!isBusy && isLatestAssistantReply && looksIncomplete ? (
+                <p className="text-xs text-[var(--color-muted)]">
+                  Roam&apos;s reply may have cut off. Send &ldquo;Please
+                  continue&rdquo; to get the rest.
+                </p>
               ) : null}
             </div>
           );

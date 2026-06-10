@@ -4,6 +4,7 @@ import { geoNaturalEarth1, geoPath } from "d3-geo";
 import { select } from "d3-selection";
 import { zoom, zoomIdentity } from "d3-zoom";
 import type { Feature, FeatureCollection, Geometry } from "geojson";
+import Link from "next/link";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { feature } from "topojson-client";
 import type { Topology } from "topojson-specification";
@@ -340,19 +341,18 @@ export function ExploreCountriesMap({ preview = false }: { preview?: boolean } =
       </div>
 
       {!preview ? (
-        <div className="flex min-h-[1.5rem] flex-wrap items-center gap-x-2 gap-y-2 text-sm text-[var(--color-muted)]">
+        <div className="flex min-h-[1.5rem] flex-wrap items-center gap-x-3 gap-y-2 text-sm text-[var(--color-muted)]">
           {selectedCountry ? (
             <>
-              <span className="font-medium text-[var(--color-ocean-deep)]">
+              <span className="font-serif text-lg font-semibold leading-none text-[var(--color-ocean-deep)]">
                 {countryName(selectedCountry)}
               </span>
-              <span aria-hidden>·</span>
-              <button
-                type="button"
-                className="inline-flex items-center justify-center rounded-full bg-[var(--color-coral)] px-4 py-1.5 text-sm font-semibold text-white shadow-sm transition hover:brightness-105"
+              <Link
+                href={`/talk-to-roam?country=${encodeURIComponent(countryName(selectedCountry))}`}
+                className="inline-flex items-center justify-center rounded-full bg-[var(--color-coral)] px-5 py-2.5 text-sm font-semibold leading-none text-white shadow-sm transition hover:brightness-105"
               >
-                Look up popular activities
-              </button>
+                Ask Roam about Popular Activities
+              </Link>
             </>
           ) : labelCountry ? (
             <>
