@@ -33,7 +33,7 @@ function homeSectionUnderProbe(probeY: number): HTMLElement | null {
 /**
  * Opaque bar on light bands; transparent on hero + photo parallax bands.
  * Uses a viewport probe so scrolling past Explore Countries doesn’t leave the
- * bar stuck solid over Specials / About.
+ * bar stuck solid over About.
  */
 function computeHomeHeaderSolid() {
   const probeY = HEADER_BAR_PX + PROBE_OFFSET_PX;
@@ -51,7 +51,6 @@ function computeHomeHeaderSolid() {
     case "explore-countries":
     case "why-travel":
       return true;
-    case "home-specials-groups":
     case "about":
       return false;
     default:

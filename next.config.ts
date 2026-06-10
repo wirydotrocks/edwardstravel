@@ -13,36 +13,6 @@ const nextConfig: NextConfig = {
         hostname: "plus.unsplash.com",
         pathname: "/**",
       },
-      {
-        protocol: "https",
-        hostname: "cdn1.gttwl.net",
-        pathname: "/**",
-      },
-      {
-        protocol: "https",
-        hostname: "s3.amazonaws.com",
-        pathname: "/**",
-      },
-      {
-        protocol: "http",
-        hostname: "s3.amazonaws.com",
-        pathname: "/**",
-      },
-      {
-        protocol: "https",
-        hostname: "api.americanmarketinggroup.com",
-        pathname: "/**",
-      },
-      {
-        protocol: "https",
-        hostname: "www.travelagencytribes.com",
-        pathname: "/**",
-      },
-      {
-        protocol: "https",
-        hostname: "travelagencytribes.com",
-        pathname: "/**",
-      },
     ],
   },
 };

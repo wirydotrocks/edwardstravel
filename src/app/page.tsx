@@ -3,8 +3,6 @@ import Link from "next/link";
 import { HomeAboutSection } from "@/components/HomeAboutSection";
 import { HomeExploreCountriesPreview } from "@/components/HomeExploreCountriesPreview";
 import { HomeHero } from "@/components/HomeHero";
-import { HomeSpecialsGroupsSection } from "@/components/HomeSpecialsGroupsSection";
-
 const highlights = [
   {
     title: "Thoughtful experiences",
@@ -67,8 +65,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      <HomeSpecialsGroupsSection />
 
       <section
         id="why-travel"
