@@ -16,7 +16,10 @@
   --color-muted: #556a7a;
   --color-border: #c9d9e8;
   --color-surface: #fcfdff;
-  --map-shell-height: clamp(560px, calc(100svh - 280px), 840px);
+  --map-shell-height: clamp(240px, calc(100svh - 26rem), 840px);
+  --site-header-height: 4rem;
+  --explore-page-above-map: 17rem;
+  --explore-page-footer-gap: 2.5rem;
 }
 
 .map-shell {
@@ -40,12 +43,37 @@
   .map-shell--full {
     aspect-ratio: auto;
     height: var(--map-shell-height);
-    min-height: var(--map-shell-height);
+    min-height: 240px;
+    max-height: var(--map-shell-height);
+  }
+
+  .explore-map-section {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: calc(
+      100dvh - var(--site-header-height) - var(--explore-page-above-map) -
+        var(--explore-page-footer-gap)
+    );
+  }
+
+  .explore-map-section .map-shell--full {
+    flex: 1 1 auto;
+    height: auto;
+    min-height: 180px;
+    max-height: none;
   }
 }
 
 .map-shell--preview {
   pointer-events: none;
+}
+
+@media (min-width: 1024px) {
+  .explore-countries-page {
+    padding-bottom: var(--explore-page-footer-gap);
+  }
 }
 
 @theme inline {

@@ -9,8 +9,8 @@ export const metadata: Metadata = {
 
 export default function ExploreCountriesPage() {
   return (
-    <main className="flex flex-1 flex-col pb-10">
-      <div className="mx-auto w-full max-w-6xl px-4 pt-14 sm:px-6 lg:px-8">
+    <main className="explore-countries-page flex flex-1 flex-col pb-6 lg:min-h-0">
+      <div className="mx-auto w-full max-w-6xl shrink-0 px-4 pt-14 sm:px-6 lg:px-8">
         <h1 className="font-serif text-4xl font-semibold text-[var(--color-ocean-deep)] sm:text-5xl">
           Explore Countries
         </h1>
@@ -20,7 +20,7 @@ export default function ExploreCountriesPage() {
         </p>
       </div>
 
-      <section className="mx-auto mt-8 w-full max-w-[1640px] px-4 sm:px-6 lg:px-8">
+      <section className="explore-map-section mx-auto mt-8 w-full max-w-[1640px] px-4 sm:px-6 lg:mt-6 lg:px-8">
         <ExploreCountriesMapClient />
       </section>
     </main>

@@ -755,20 +755,22 @@ function WorldMap({ preview }: { preview: boolean }) {
   };
 
   return (
-    <div className={preview ? undefined : "space-y-4"}>
+    <div className={preview ? undefined : "flex min-h-0 flex-1 flex-col gap-4"}>
       {!preview ? (
-        <CountryMapSearch
-          countries={countries}
-          selectedCountry={selectedCountry}
-          onSelectCountry={(id) => {
-            clearHover();
-            setSelectedId(id);
-          }}
-        />
+        <div className="shrink-0">
+          <CountryMapSearch
+            countries={countries}
+            selectedCountry={selectedCountry}
+            onSelectCountry={(id) => {
+              clearHover();
+              setSelectedId(id);
+            }}
+          />
+        </div>
       ) : null}
       <div
         ref={containerRef}
-        className={preview ? MAP_SHELL_PREVIEW : MAP_SHELL_FULL}
+        className={`${preview ? MAP_SHELL_PREVIEW : MAP_SHELL_FULL}${preview ? "" : " min-h-0"}`}
       >
         {!preview ? (
           <div className="absolute right-3 top-3 z-10 flex flex-col gap-1.5">
@@ -869,7 +871,7 @@ function WorldMap({ preview }: { preview: boolean }) {
       </div>
 
       {!preview ? (
-        <div className="flex min-h-[1.5rem] flex-wrap items-center gap-x-3 gap-y-2 text-sm text-[var(--color-muted)]">
+        <div className="flex shrink-0 flex-wrap items-center gap-x-3 gap-y-2 text-sm text-[var(--color-muted)]">
           {selectedCountry ? (
             <>
               {labelAlpha2 ? (

@@ -164,11 +164,11 @@ export function RoamChat() {
   };
 
   return (
-    <div className="flex h-[min(640px,calc(100dvh-13rem))] flex-col overflow-hidden rounded-2xl border border-[var(--color-border)] bg-white shadow-sm">
+    <div className="flex h-[min(640px,calc(100dvh-13rem))] flex-col overflow-hidden rounded-2xl border border-[var(--color-border)] bg-white shadow-sm lg:h-[min(760px,calc(100dvh-10rem))]">
       <div
         ref={messagesScrollRef}
         onScroll={handleMessagesScroll}
-        className="flex-1 min-h-0 space-y-4 overflow-y-auto overscroll-contain px-4 py-5 sm:px-6"
+        className="flex-1 min-h-0 space-y-4 overflow-y-auto overscroll-contain px-4 py-5 sm:px-6 lg:mx-auto lg:w-full lg:max-w-3xl"
       >
         {messages.map((message, messageIndex) => {
           const text = messageText(message);
@@ -271,7 +271,7 @@ export function RoamChat() {
 
       <form
         onSubmit={handleSubmit}
-        className="shrink-0 border-t border-[var(--color-border)] bg-[var(--color-surface)] p-4 sm:p-5"
+        className="shrink-0 border-t border-[var(--color-border)] bg-[var(--color-surface)] p-4 sm:p-5 lg:px-6"
       >
         <div className="flex flex-col gap-3">
           <label className="flex w-full flex-col gap-1.5">
@@ -284,7 +284,7 @@ export function RoamChat() {
               placeholder="e.g. Where should I go for a relaxed beach trip in March?"
               rows={2}
               disabled={isBusy}
-              className="w-full resize-none rounded-xl border border-[var(--color-border)] bg-white px-4 py-3 text-sm text-[var(--color-ink)] shadow-sm outline-none ring-[var(--color-ocean)]/40 focus:ring-2 disabled:opacity-60"
+              className="w-full resize-none rounded-xl border border-[var(--color-border)] bg-white px-4 py-3 text-sm text-[var(--color-ink)] shadow-sm outline-none ring-[var(--color-ocean)]/40 focus:ring-2 disabled:opacity-60 lg:min-h-[7rem] lg:py-4"
             />
           </label>
           <button
