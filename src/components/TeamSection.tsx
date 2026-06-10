@@ -14,6 +14,46 @@ function telHref(phone: string) {
   return digits ? `tel:+${digits}` : undefined;
 }
 
+function TeamMemberPhoto({
+  member,
+  className,
+  sizes,
+  rounded = false,
+}: {
+  member: TeamMember;
+  className?: string;
+  sizes: string;
+  rounded?: boolean;
+}) {
+  if (member.imageSrc) {
+    return (
+      <Image
+        src={member.imageSrc}
+        alt={rounded ? "" : member.name}
+        fill
+        className={className}
+        sizes={sizes}
+      />
+    );
+  }
+
+  return (
+    <div
+      className={`flex h-full w-full items-center justify-center bg-[var(--color-sand-muted)] ${rounded ? "rounded-full" : ""}`}
+      aria-hidden={rounded}
+    >
+      <svg
+        viewBox="0 0 24 24"
+        className="h-[38%] w-[38%] text-[var(--color-muted)]/45"
+        fill="currentColor"
+        aria-hidden
+      >
+        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+      </svg>
+    </div>
+  );
+}
+
 export function TeamSection({ members = teamMembers }: TeamSectionProps) {
   const [flipped, setFlipped] = useState<Record<string, boolean>>({});
 
@@ -65,10 +105,8 @@ function FlipCard({
             aria-label={`${member.name} — show profile`}
           >
             <div className="relative h-[52%] w-full shrink-0 bg-[var(--color-sand-muted)] sm:h-full sm:w-[52%] sm:min-w-0">
-              <Image
-                src={member.imageSrc}
-                alt={member.name}
-                fill
+              <TeamMemberPhoto
+                member={member}
                 className="object-cover transition group-hover:brightness-[1.02]"
                 sizes="(max-width: 640px) 100vw, (max-width: 1280px) 40vw, 28vw"
               />
@@ -90,12 +128,11 @@ function FlipCard({
           <div className="flex h-full min-h-0 w-full flex-col overflow-hidden sm:flex-row">
             <div className="flex shrink-0 flex-col items-center border-b border-[var(--color-border)] bg-[var(--color-sand)]/50 px-3 py-4 sm:w-[min(7.5rem,28%)] sm:border-b-0 sm:border-r sm:py-5">
               <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-full bg-[var(--color-sand-muted)] ring-2 ring-[var(--color-border)] sm:h-20 sm:w-20">
-                <Image
-                  src={member.imageSrc}
-                  alt=""
-                  fill
+                <TeamMemberPhoto
+                  member={member}
                   className="object-cover"
                   sizes="80px"
+                  rounded
                 />
               </div>
               <h3 className="mt-3 text-center font-serif text-sm font-semibold leading-tight text-[var(--color-ocean-deep)] sm:text-base">
