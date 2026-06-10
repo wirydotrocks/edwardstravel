@@ -5,7 +5,15 @@ import { DefaultChatTransport, type UIMessage } from "ai";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { parseRoamAssistantReply } from "@/lib/roam-message-format";
+import {
+  buildPlanTripContactHref,
+  parseRoamAssistantReply,
+} from "@/lib/roam-message-format";
+import {
+  planNotesFromMessage,
+  resolveDestinationUpTo,
+  resolveThreadDestination,
+} from "@/lib/roam-destination-detect";
 import { ROAM_WELCOME_MESSAGE, roamActivitiesPrompt } from "@/lib/roam-prompt";
 
 function messageText(message: UIMessage): string {
@@ -64,6 +72,23 @@ function RoamBubble({
   );
 }
 
+function PlanThisTripButton({
+  destination,
+  notes,
+}: {
+  destination: string;
+  notes?: string;
+}) {
+  return (
+    <Link
+      href={buildPlanTripContactHref({ destination, notes })}
+      className="inline-flex items-center justify-center rounded-full border-2 border-[var(--color-ocean)] bg-white px-4 py-2 text-sm font-semibold text-[var(--color-ocean-deep)] shadow-sm transition hover:bg-[var(--color-sand)]"
+    >
+      Plan this trip
+    </Link>
+  );
+}
+
 const welcomeMessage: UIMessage = {
   id: "roam-welcome",
   role: "assistant",
@@ -89,6 +114,7 @@ export function RoamChat() {
     setInput(roamActivitiesPrompt(country));
     seededFromUrl.current = true;
   }, [searchParams]);
+
   const transport = useMemo(
     () => new DefaultChatTransport({ api: "/api/roam" }),
     [],
@@ -100,6 +126,13 @@ export function RoamChat() {
   });
 
   const isBusy = status === "submitted" || status === "streaming";
+  const threadDestination = useMemo(
+    () => resolveThreadDestination(messages, countryFromUrl),
+    [messages, countryFromUrl],
+  );
+  const showStickyBar =
+    Boolean(threadDestination) &&
+    (messages.length > 1 || Boolean(countryFromUrl));
 
   const scrollMessagesToBottom = (behavior: ScrollBehavior = "smooth") => {
     const el = messagesScrollRef.current;
@@ -151,11 +184,18 @@ export function RoamChat() {
             );
           }
 
-          const { ideas, summary, looksIncomplete } = parseRoamAssistantReply(text);
+          const { ideas, summary, looksIncomplete } =
+            parseRoamAssistantReply(text);
           const ideaBubbles = ideas.length > 0 ? ideas : [text];
-          const isLatestAssistantReply =
-            message.role === "assistant" &&
-            messageIndex === messages.length - 1;
+          const isWelcome = message.id === welcomeMessage.id;
+          const isLatestAssistantReply = messageIndex === messages.length - 1;
+          const replyComplete = !isBusy || !isLatestAssistantReply;
+          const destination = resolveDestinationUpTo(
+            messages,
+            messageIndex,
+            countryFromUrl,
+          );
+          const planNotes = planNotesFromMessage(text);
 
           return (
             <div key={message.id} className="space-y-3">
@@ -173,7 +213,15 @@ export function RoamChat() {
                   </ul>
                 </RoamBubble>
               ) : null}
-              {!isBusy && isLatestAssistantReply && looksIncomplete ? (
+              {!isWelcome && replyComplete && destination ? (
+                <div className="flex justify-start">
+                  <PlanThisTripButton
+                    destination={destination}
+                    notes={planNotes}
+                  />
+                </div>
+              ) : null}
+              {replyComplete && isLatestAssistantReply && looksIncomplete ? (
                 <p className="text-xs text-[var(--color-muted)]">
                   Roam&apos;s reply may have cut off. Send &ldquo;Please
                   continue&rdquo; to get the rest.
@@ -200,6 +248,26 @@ export function RoamChat() {
           </div>
         ) : null}
       </div>
+
+      {showStickyBar && threadDestination ? (
+        <div className="shrink-0 border-t border-[var(--color-border)] bg-[var(--color-sand)]/80 px-4 py-3 sm:px-5">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm text-[var(--color-ink)]">
+              Planning{" "}
+              <span className="font-semibold text-[var(--color-ocean-deep)]">
+                {threadDestination}
+              </span>
+              ?
+            </p>
+            <Link
+              href={buildPlanTripContactHref({ destination: threadDestination })}
+              className="inline-flex shrink-0 items-center justify-center rounded-full bg-[var(--color-coral)] px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:brightness-105"
+            >
+              Start your trip
+            </Link>
+          </div>
+        </div>
+      ) : null}
 
       <form
         onSubmit={handleSubmit}
@@ -228,15 +296,7 @@ export function RoamChat() {
           </button>
         </div>
         <p className="mt-3 text-xs text-[var(--color-muted)]">
-          Roam suggests ideas for inspiration. For bookings and custom
-          itineraries,{" "}
-          <Link
-            href="/contact?topic=plan-trip"
-            className="font-medium text-[var(--color-ocean)] underline-offset-2 hover:underline"
-          >
-            talk to Edwards Travel
-          </Link>
-          {" · "}
+          Roam suggests ideas for inspiration.{" "}
           <Link
             href="/explore-countries"
             className="font-medium text-[var(--color-ocean)] underline-offset-2 hover:underline"

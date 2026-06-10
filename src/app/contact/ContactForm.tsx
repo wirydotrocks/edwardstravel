@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
 const defaultEmail = "hello@edwardstravel.com";
@@ -111,15 +111,34 @@ export function ContactForm({ initialTopic }: { initialTopic?: string }) {
   }, [searchParams]);
 
   const [emailTo, setEmailTo] = useState(defaultEmail);
+  const seededFromRoam = useRef(false);
 
   // Plan your trip
   const [ptName, setPtName] = useState("");
-  const [destination, setDestination] = useState("");
+  const [destination, setDestination] = useState(() =>
+    searchParams.get("destination")?.trim() ?? "",
+  );
   const [travelType, setTravelType] = useState("");
   const [tripMonthText, setTripMonthText] = useState("");
   const [tripYearInput, setTripYearInput] = useState("");
   const [length, setLength] = useState("");
-  const [ptNotes, setPtNotes] = useState("");
+  const [ptNotes, setPtNotes] = useState(() =>
+    searchParams.get("notes")?.trim() ?? "",
+  );
+
+  useEffect(() => {
+    if (seededFromRoam.current) return;
+    const dest = searchParams.get("destination")?.trim();
+    const notes = searchParams.get("notes")?.trim();
+    const topic = searchParams.get("topic");
+    if (!dest && !notes) return;
+    if (topic === "plan-trip" || dest) {
+      setHelpTopic("plan-trip");
+    }
+    if (dest) setDestination(dest);
+    if (notes) setPtNotes(notes);
+    seededFromRoam.current = true;
+  }, [searchParams]);
 
   // Business
   const [organization, setOrganization] = useState("");
