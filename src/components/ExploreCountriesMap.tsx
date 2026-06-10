@@ -314,13 +314,44 @@ function constrainMapTransform(
     .scale(scale);
 }
 
+function pickFocusTranslateX(
+  baseTx: number,
+  scale: number,
+  viewportWidth: number,
+  currentX: number,
+  countryCenterX: number,
+): number {
+  const period = viewportWidth * scale;
+  if (period <= 0) return baseTx;
+
+  const east = countryCenterX >= viewportWidth / 2;
+  const nCenter = Math.round((currentX - baseTx) / period);
+  const candidates = [nCenter - 1, nCenter, nCenter + 1].map(
+    (n) => baseTx + n * period,
+  );
+
+  if (east) {
+    const westward = candidates.filter((candidate) => candidate <= currentX);
+    if (westward.length > 0) {
+      return Math.max(...westward);
+    }
+    return Math.min(...candidates.filter((candidate) => candidate > currentX));
+  }
+
+  const eastward = candidates.filter((candidate) => candidate >= currentX);
+  if (eastward.length > 0) {
+    return Math.min(...eastward);
+  }
+  return Math.max(...candidates.filter((candidate) => candidate < currentX));
+}
+
 function computeFocusTransform(
   country: CountryFeature,
   pathGenerator: ReturnType<typeof geoPath>,
   viewportWidth: number,
   viewportHeight: number,
   currentX: number,
-) {
+): { transform: ZoomTransform; translateX: number } {
   const [[x0, y0], [x1, y1]] = pathGenerator.bounds(country);
   const cx = (x0 + x1) / 2;
   const cy = (y0 + y1) / 2;
@@ -337,19 +368,18 @@ function computeFocusTransform(
 
   const baseTx = viewportWidth / 2 - k * cx;
   const ty = viewportHeight / 2 - k * cy;
-
-  const period = viewportWidth * k;
-  const candidates =
-    period > 0
-      ? [baseTx, baseTx + period, baseTx - period]
-      : [baseTx];
-  const tx = candidates.reduce((best, candidate) =>
-    Math.abs(candidate - currentX) < Math.abs(best - currentX)
-      ? candidate
-      : best,
+  const tx = pickFocusTranslateX(
+    baseTx,
+    k,
+    viewportWidth,
+    currentX,
+    cx,
   );
 
-  return constrainMapTransform(tx, ty, k, viewportWidth, viewportHeight);
+  return {
+    transform: constrainMapTransform(tx, ty, k, viewportWidth, viewportHeight),
+    translateX: tx,
+  };
 }
 
 function animateMapTransform(
@@ -359,6 +389,7 @@ function animateMapTransform(
   viewportWidth: number,
   viewportHeight: number,
   durationMs: number,
+  endTranslateX = target.x,
 ): () => void {
   const svg = select(svgEl);
   const start = zoomTransform(svgEl);
@@ -368,10 +399,15 @@ function animateMapTransform(
   const step = (now: number) => {
     const progress = Math.min(1, (now - startTime) / durationMs);
     const ease = 1 - (1 - progress) ** 3;
-    const x = start.x + (target.x - start.x) * ease;
+    const x = start.x + (endTranslateX - start.x) * ease;
     const y = start.y + (target.y - start.y) * ease;
     const k = start.k + (target.k - start.k) * ease;
-    const next = constrainMapTransform(x, y, k, viewportWidth, viewportHeight);
+    const next =
+      progress >= 1
+        ? target
+        : zoomIdentity
+            .translate(x, clampPanY(y, k, viewportHeight))
+            .scale(k);
     svg.call(behavior.transform, next);
     if (progress < 1) {
       frameId = requestAnimationFrame(step);
@@ -643,10 +679,11 @@ function WorldMap({ preview }: { preview: boolean }) {
     focusAnimationCancelRef.current = animateMapTransform(
       svgEl,
       behavior,
-      next,
+      next.transform,
       nextWidth,
       nextHeight,
       FOCUS_DURATION_MS,
+      next.translateX,
     );
 
     return () => {
