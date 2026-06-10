@@ -1,9 +1,6 @@
 import { SearchableBlogFeed } from "@/components/SearchableBlogFeed";
-import {
-  fetchBlogPosts,
-  fetchExperiencePosts,
-  tatPostToEdwardsRssItem,
-} from "@/lib/tat-api";
+import { fetchExperiencePosts, tatPostToEdwardsRssItem } from "@/lib/tat-api";
+import { fetchBlogRssItems } from "@/lib/rss-api";
 
 function FeedError({ message }: { message: string }) {
   return (
@@ -16,9 +13,10 @@ function FeedError({ message }: { message: string }) {
       </p>
       <p className="mt-1 font-mono text-xs">{message}</p>
       <p className="mt-3 text-xs text-[var(--color-muted)]">
-        Confirm <code className="rounded bg-white/60 px-1">TAT_API_TOKEN</code>,{" "}
-        <code className="rounded bg-white/60 px-1">TAT_AGENCY_ID</code> if your
-        tenant requires it, and that this server can reach{" "}
+        For the blog: confirm this server can reach the RSS host. For
+        experiences:{" "}
+        <code className="rounded bg-white/60 px-1">TAT_API_TOKEN</code> /{" "}
+        <code className="rounded bg-white/60 px-1">TAT_AGENCY_ID</code> and{" "}
         <code className="rounded bg-white/60 px-1">api.gttwl2.com</code>.
       </p>
     </div>
@@ -27,8 +25,14 @@ function FeedError({ message }: { message: string }) {
 
 export async function TatBlogFeedFromServer() {
   try {
-    const posts = await fetchBlogPosts();
-    const items = posts.map((p) => tatPostToEdwardsRssItem(p, "blog"));
+    const state = await fetchBlogRssItems();
+    if (!state.ok) {
+      return <FeedError message={state.message} />;
+    }
+    const items = state.items.map((row) => ({
+      ...row,
+      cmsKind: "blog" as const,
+    }));
     return (
       <SearchableBlogFeed
         items={items}

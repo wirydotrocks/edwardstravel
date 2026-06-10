@@ -1,29 +1,28 @@
 import { NextResponse } from "next/server";
-import { tatPostToPublicListPost } from "@/lib/tat-public-list";
-import { fetchBlogPosts } from "@/lib/tat-api";
+import { toTatPublicListFromRssItem } from "@/lib/tat-public-list";
+import { fetchBlogRssItems } from "@/lib/rss-api";
 
 export const runtime = "nodejs";
 export const revalidate = 86400;
 
-/** TAT list: `GET …/post?type=Blogs&page_size=200&order=created_at desc` (Basic `agency` + `TAT_API_TOKEN`). */
+/** Travel Agency Tribes blog RSS (`BLOG_RSS_URL` or default). */
 export async function GET() {
-  try {
-    const posts = await fetchBlogPosts();
-    const items = posts.map(tatPostToPublicListPost);
+  const state = await fetchBlogRssItems();
+  if (!state.ok) {
     return NextResponse.json(
-      { ok: true, items },
-      {
-        headers: {
-          "Cache-Control": "public, s-maxage=86400, stale-while-revalidate=43200",
-        },
-      },
-    );
-  } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Unable to load blog posts.";
-    return NextResponse.json(
-      { ok: false, message },
+      { ok: false, message: state.message },
       { status: 502 },
     );
   }
+  const items = state.items.map((row) =>
+    toTatPublicListFromRssItem({ ...row, cmsKind: "blog" }),
+  );
+  return NextResponse.json(
+    { ok: true, items },
+    {
+      headers: {
+        "Cache-Control": "public, s-maxage=86400, stale-while-revalidate=43200",
+      },
+    },
+  );
 }

@@ -15,6 +15,16 @@ export type FeedApiState =
   | { ok: true; items: EdwardsRssItem[] }
   | { ok: false; message: string };
 
+/** Travel Agency Tribes blog RSS (override with `BLOG_RSS_URL`). */
+export const BLOG_RSS_URL =
+  process.env.BLOG_RSS_URL?.trim() ||
+  "https://www.travelagencytribes.com/rss/blog";
+
+/** Blog list for this site — public RSS, no TAT token. */
+export async function fetchBlogRssItems(): Promise<FeedApiState> {
+  return fetchRssFeedItems(BLOG_RSS_URL);
+}
+
 function asArray<T>(value: T | T[] | undefined): T[] {
   if (!value) return [];
   return Array.isArray(value) ? value : [value];

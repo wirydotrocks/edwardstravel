@@ -33,6 +33,16 @@ const nextConfig: NextConfig = {
         hostname: "api.americanmarketinggroup.com",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "www.travelagencytribes.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "travelagencytribes.com",
+        pathname: "/**",
+      },
     ],
   },
 };

@@ -6,10 +6,11 @@ import {
   sanitizeBlogHtml,
   stripFirstInlineImage,
 } from "@/lib/blog-html";
-import { formatRssPostDate, type EdwardsRssItem } from "@/lib/edwards-rss";
+import { formatRssPostDate } from "@/lib/edwards-rss";
 import { getInternalBaseUrl } from "@/lib/internal-api";
 import {
   tatPublicListDescription,
+  tatPublicListPostToEdwardsRssItem,
   type TatPublicListPost,
 } from "@/lib/tat-public-list";
 
@@ -17,8 +18,6 @@ type PageProps = { params: Promise<{ slug: string }> };
 type ListResponse =
   | { ok: true; items: TatPublicListPost[] }
   | { ok: false; message: string };
-type PostResponse = { ok: true; item: EdwardsRssItem } | { ok: false; message: string };
-
 export const revalidate = 86400;
 
 export const dynamicParams = true;
@@ -33,16 +32,6 @@ async function getBlogItemBySlug(
   if (!data.ok) return undefined;
   const items = data.items;
   return items.find((item) => item.slug === slug);
-}
-
-async function getPostById(id: string): Promise<EdwardsRssItem | undefined> {
-  const baseUrl = await getInternalBaseUrl();
-  const res = await fetch(`${baseUrl}/api/posts/${encodeURIComponent(id)}`, {
-    next: { revalidate: 86400 },
-  });
-  if (!res.ok) return undefined;
-  const data = (await res.json()) as PostResponse;
-  return data.ok ? data.item : undefined;
 }
 
 export async function generateStaticParams() {
@@ -75,9 +64,10 @@ export default async function BlogPostPage({ params }: PageProps) {
   const { slug } = await params;
   const summaryItem = await getBlogItemBySlug(slug);
   if (!summaryItem) notFound();
-  const item = await getPostById(summaryItem.id);
-  if (!item) notFound();
-  if (item.cmsKind && item.cmsKind !== "blog") notFound();
+  /** Blog body comes from RSS list item (TAT `/api/posts` is not used for blog). */
+  const item = tatPublicListPostToEdwardsRssItem(summaryItem, {
+    cmsKind: "blog",
+  });
 
   const backHref = "/blog";
   const sectionLabel = "Blog";

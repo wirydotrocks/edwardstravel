@@ -4,6 +4,8 @@ import { maxQualityFeedImageUrl } from "@/lib/feed-image-url";
 
 const TAT_BASE = "https://api.gttwl2.com";
 const REVALIDATE = 86400;
+const TAT_PAGE_SIZE = 200;
+const TAT_MAX_LIST_PAGES = 50;
 
 export type TatPost = {
   id: string;
@@ -32,9 +34,9 @@ function authHeader(): string {
   return `Basic ${Buffer.from(`${user}:${token}`).toString("base64")}`;
 }
 
-function listQuery(type: "Blogs" | "Products"): string {
+function listQueryPage(page: number): string {
   const order = encodeURIComponent("created_at desc");
-  let q = `type=${type}&page_size=200&order=${order}`;
+  let q = `type=Products&page=${page}&page_size=${TAT_PAGE_SIZE}&order=${order}`;
   const agency = process.env.TAT_AGENCY_ID?.trim();
   if (agency) q += `&agency_id=${encodeURIComponent(agency)}`;
   return q;
@@ -92,7 +94,8 @@ function isActiveRow(row: Record<string, unknown>): boolean {
       lower === "draft" ||
       lower === "archived" ||
       lower === "deleted" ||
-      lower === "inactive"
+      lower === "inactive" ||
+      lower === "scheduled"
     ) {
       return false;
     }
@@ -170,18 +173,36 @@ function rowToTatPost(
   };
 }
 
-async function loadPosts(type: "Blogs" | "Products"): Promise<TatPost[]> {
+function dedupeKeyForPost(p: TatPost): string {
+  if (p.zid) return p.zid;
+  if (p.id) return p.id;
+  if (p.permalink && p.permalink !== "#") return p.permalink;
+  return p.id;
+}
+
+async function loadPosts(): Promise<TatPost[]> {
   try {
-    const json = await tatFetchJson(`/post?${listQuery(type)}`);
-    const entries = entriesFromPayload(json);
-    const out: TatPost[] = [];
-    for (const row of entries) {
-      const p = rowToTatPost(row);
-      if (p) out.push(p);
+    const byKey = new Map<string, TatPost>();
+    for (let page = 1; page <= TAT_MAX_LIST_PAGES; page += 1) {
+      const json = await tatFetchJson(`/post?${listQueryPage(page)}`);
+      const entries = entriesFromPayload(json);
+      if (entries.length === 0) break;
+      const sizeBefore = byKey.size;
+      for (const row of entries) {
+        const p = rowToTatPost(row);
+        if (!p) continue;
+        const k = dedupeKeyForPost(p);
+        if (!byKey.has(k)) byKey.set(k, p);
+      }
+      if (byKey.size === sizeBefore) break;
     }
-    return out;
+    const merged = Array.from(byKey.values());
+    console.log(
+      `[TAT] Products list: pages<=${TAT_MAX_LIST_PAGES} page_size=${TAT_PAGE_SIZE} merged=${merged.length}`,
+    );
+    return merged;
   } catch (e) {
-    console.error(`[TAT] fetch ${type}:`, e);
+    console.error("[TAT] fetch Products:", e);
     throw e;
   }
 }
@@ -189,15 +210,9 @@ async function loadPosts(type: "Blogs" | "Products"): Promise<TatPost[]> {
 const cacheAgency = () => process.env.TAT_AGENCY_ID?.trim() ?? "";
 const cacheAuthUser = () => process.env.TAT_API_AUTH_USER?.trim() || "agency";
 
-export const fetchBlogPosts = unstable_cache(
-  () => loadPosts("Blogs"),
-  ["tat", "blog-posts", "v2", cacheAgency(), cacheAuthUser()],
-  { revalidate: REVALIDATE },
-);
-
 export const fetchExperiencePosts = unstable_cache(
-  () => loadPosts("Products"),
-  ["tat", "experience-posts", "v2", cacheAgency(), cacheAuthUser()],
+  () => loadPosts(),
+  ["tat", "experience-posts", "v3-paginated", cacheAgency(), cacheAuthUser()],
   { revalidate: REVALIDATE },
 );
 
