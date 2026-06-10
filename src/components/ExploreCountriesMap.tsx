@@ -16,6 +16,10 @@ import {
 } from "@/lib/country-flags";
 import { countryHoverMode } from "@/lib/country-hover-mode";
 import { CountryMapSearch } from "@/components/CountryMapSearch";
+import {
+  MAP_SHELL_FULL,
+  MAP_SHELL_PREVIEW,
+} from "@/components/explore-map-shell";
 
 type CountryProperties = { name: string };
 type CountryFeature = Feature<Geometry, CountryProperties>;
@@ -445,7 +449,15 @@ function CountryPaths({
   );
 }
 
-export function ExploreCountriesMap({ preview = false }: { preview?: boolean } = {}) {
+export function ExploreCountriesMap() {
+  return <WorldMap preview={false} />;
+}
+
+export function ExploreCountriesMapPreview() {
+  return <WorldMap preview={true} />;
+}
+
+function WorldMap({ preview }: { preview: boolean }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const mapGroupRef = useRef<SVGGElement>(null);
@@ -453,6 +465,7 @@ export function ExploreCountriesMap({ preview = false }: { preview?: boolean } =
     typeof zoom<SVGSVGElement, unknown>
   > | null>(null);
   const focusAnimationCancelRef = useRef<(() => void) | null>(null);
+  const prevSelectedIdRef = useRef<string | null>(null);
   const [size, setSize] = useState({ width: 960, height: 520 });
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [hoveredCountryId, setHoveredCountryId] = useState<string | null>(null);
@@ -494,10 +507,11 @@ export function ExploreCountriesMap({ preview = false }: { preview?: boolean } =
     if (!el) return;
 
     const sync = () => {
-      const { width } = el.getBoundingClientRect();
+      const { width, height } = el.getBoundingClientRect();
       const nextWidth = Math.floor(width);
-      if (nextWidth <= 0) return;
-      setSize({ width: nextWidth, height: Math.round(nextWidth * 0.52) });
+      const nextHeight = Math.floor(height);
+      if (nextWidth <= 0 || nextHeight <= 0) return;
+      setSize({ width: nextWidth, height: nextHeight });
     };
 
     sync();
@@ -517,6 +531,9 @@ export function ExploreCountriesMap({ preview = false }: { preview?: boolean } =
     );
     return geoPath(projection);
   }, [countries, size.height, size.width]);
+
+  const pathGeneratorRef = useRef(pathGenerator);
+  pathGeneratorRef.current = pathGenerator;
 
   useEffect(() => {
     if (preview) return;
@@ -570,7 +587,7 @@ export function ExploreCountriesMap({ preview = false }: { preview?: boolean } =
 
     zoomBehaviorRef.current = behavior;
     svg.call(behavior);
-    svg.call(behavior.transform, zoomIdentity);
+    svg.call(behavior.transform, zoomTransform(svgEl));
 
     return () => {
       svg.on(".zoom", null);
@@ -583,22 +600,29 @@ export function ExploreCountriesMap({ preview = false }: { preview?: boolean } =
 
     const svgEl = svgRef.current;
     const behavior = zoomBehaviorRef.current;
-    if (!svgEl || !behavior) return;
+    const containerEl = containerRef.current;
+    if (!svgEl || !behavior || !containerEl) return;
 
     focusAnimationCancelRef.current?.();
     focusAnimationCancelRef.current = null;
 
-    const { width, height } = size;
+    const { width, height } = containerEl.getBoundingClientRect();
+    const nextWidth = Math.floor(width);
+    const nextHeight = Math.floor(height);
+    if (nextWidth <= 0 || nextHeight <= 0) return;
+
     const current = zoomTransform(svgEl);
+    const hadSelection = prevSelectedIdRef.current !== null;
+    prevSelectedIdRef.current = selectedId;
 
     if (!selectedId) {
-      if (current.k === 1 && current.x === 0 && current.y === 0) return;
+      if (!hadSelection) return;
       focusAnimationCancelRef.current = animateMapTransform(
         svgEl,
         behavior,
         zoomIdentity,
-        width,
-        height,
+        nextWidth,
+        nextHeight,
         FOCUS_DURATION_MS,
       );
       return;
@@ -609,9 +633,9 @@ export function ExploreCountriesMap({ preview = false }: { preview?: boolean } =
 
     const next = computeFocusTransform(
       country,
-      pathGenerator,
-      width,
-      height,
+      pathGeneratorRef.current,
+      nextWidth,
+      nextHeight,
       current.x,
     );
 
@@ -619,8 +643,8 @@ export function ExploreCountriesMap({ preview = false }: { preview?: boolean } =
       svgEl,
       behavior,
       next,
-      width,
-      height,
+      nextWidth,
+      nextHeight,
       FOCUS_DURATION_MS,
     );
 
@@ -628,7 +652,7 @@ export function ExploreCountriesMap({ preview = false }: { preview?: boolean } =
       focusAnimationCancelRef.current?.();
       focusAnimationCancelRef.current = null;
     };
-  }, [selectedId, countries, pathGenerator, preview, size.height, size.width]);
+  }, [selectedId, countries, preview]);
 
   const zoomIn = () => {
     const svgEl = svgRef.current;
@@ -706,7 +730,7 @@ export function ExploreCountriesMap({ preview = false }: { preview?: boolean } =
       ) : null}
       <div
         ref={containerRef}
-        className={`relative aspect-[100/52] w-full overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-sand-muted)] shadow-sm ${preview ? "pointer-events-none" : ""}`}
+        className={preview ? MAP_SHELL_PREVIEW : MAP_SHELL_FULL}
       >
         {!preview ? (
           <div className="absolute right-3 top-3 z-10 flex flex-col gap-1.5">

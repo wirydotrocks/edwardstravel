@@ -16,6 +16,36 @@
   --color-muted: #556a7a;
   --color-border: #c9d9e8;
   --color-surface: #fcfdff;
+  --map-shell-height: clamp(560px, calc(100svh - 280px), 840px);
+}
+
+.map-shell {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 1rem;
+  border: 1px solid var(--color-border);
+  background: var(--color-sand-muted);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.05);
+  aspect-ratio: 100 / 52;
+  min-height: 280px;
+}
+
+.map-shell--full {
+  aspect-ratio: 100 / 52;
+  width: 100%;
+}
+
+@media (min-width: 1024px) {
+  .map-shell--full {
+    aspect-ratio: auto;
+    height: var(--map-shell-height);
+    min-height: var(--map-shell-height);
+  }
+}
+
+.map-shell--preview {
+  pointer-events: none;
 }
 
 @theme inline {
