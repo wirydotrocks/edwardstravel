@@ -28,12 +28,16 @@ function friendlyRoamError(message: string): string {
   if (
     lower.includes("quota") ||
     lower.includes("429") ||
-    lower.includes("rate limit")
+    lower.includes("rate limit") ||
+    lower.includes("too many requests")
   ) {
-    return "Roam is temporarily unavailable — the AI quota for today has been used up. Wait a few minutes and try again, or check your Google AI Studio key and usage at aistudio.google.com.";
+    return "Roam is temporarily busy. Please wait a minute and try again.";
   }
-  if (lower.includes("api key") || lower.includes("401") || lower.includes("403")) {
-    return "Roam could not connect — check that GOOGLE_GENERATIVE_AI_API_KEY is set correctly in your environment.";
+  if (lower.includes("too long") || lower.includes("too large")) {
+    return message;
+  }
+  if (lower.includes("forbidden")) {
+    return "Roam could not accept that request. Refresh the page and try again.";
   }
   return "Something went wrong. Please try again in a moment.";
 }
