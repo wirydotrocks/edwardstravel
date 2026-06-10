@@ -1,0 +1,29 @@
+import type { Metadata } from "next";
+import { RoamChat } from "@/components/RoamChat";
+
+export const metadata: Metadata = {
+  title: "Talk to Roam",
+  description:
+    "Chat with Roam AI, your Edwards Travel guide—discover countries and things to do on your next trip.",
+};
+
+export default function TalkToRoamPage() {
+  return (
+    <main className="mx-auto max-w-3xl flex-1 px-4 py-10 sm:px-6 sm:py-12 lg:px-8">
+      <p className="text-sm font-semibold uppercase tracking-wider text-[var(--color-ocean)]">
+        Roam AI
+      </p>
+      <h1 className="mt-2 font-serif text-4xl font-semibold text-[var(--color-ocean-deep)] sm:text-5xl">
+        Talk to Roam
+      </h1>
+      <p className="mt-4 max-w-2xl text-[var(--color-muted)]">
+        Roam helps you narrow down where to go and what to do—whether you have
+        a country in mind or you&apos;re still browsing the map for ideas.
+      </p>
+
+      <div className="mt-8">
+        <RoamChat />
+      </div>
+    </main>
+  );
+}

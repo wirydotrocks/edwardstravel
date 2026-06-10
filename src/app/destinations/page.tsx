@@ -15,19 +15,22 @@ export default function DestinationsPage() {
         Destinations
       </h1>
       <p className="mt-4 max-w-2xl text-[var(--color-muted)]">
-        Explore by country and region. 
-        <br />
-        Each country groups related areas so you
-        can go deeper without getting lost.
-        <br />
-         See also{" "}
+        Stories and ideas from our feed, searchable by place or keyword. For an
+        interactive world map, see{" "}
+        <Link
+          href="/explore-countries"
+          className="font-medium text-[var(--color-ocean)] underline-offset-2 hover:underline"
+        >
+          Explore Countries
+        </Link>
+        . Also browse{" "}
         <Link
           href="/experiences"
           className="font-medium text-[var(--color-ocean)] underline-offset-2 hover:underline"
         >
           Experiences
         </Link>{" "}
-        and the{" "}
+        or the{" "}
         <Link
           href="/blog"
           className="font-medium text-[var(--color-ocean)] underline-offset-2 hover:underline"
