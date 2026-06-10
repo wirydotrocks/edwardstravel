@@ -14,8 +14,8 @@ export default function ExploreCountriesPage() {
         Explore Countries
       </h1>
       <p className="mt-4 max-w-2xl text-[var(--color-muted)]">
-        Click any country to highlight it on the map. Every nation is shown, so
-        feel free to tap around to see where you might go next.
+        Click any country on the map or search below to highlight it. Every nation
+        is shown, so feel free to tap around to see where you might go next.
       </p>
 
       <div className="mt-10">

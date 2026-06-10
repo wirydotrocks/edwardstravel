@@ -2,7 +2,7 @@
 
 import { geoNaturalEarth1, geoPath } from "d3-geo";
 import { select } from "d3-selection";
-import { zoom, zoomIdentity } from "d3-zoom";
+import { zoom, zoomIdentity, zoomTransform, type ZoomTransform } from "d3-zoom";
 import type { Feature, FeatureCollection, Geometry, Polygon } from "geojson";
 import Link from "next/link";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
@@ -15,6 +15,7 @@ import {
   snapFlagcdnWidth,
 } from "@/lib/country-flags";
 import { countryHoverMode } from "@/lib/country-hover-mode";
+import { CountryMapSearch } from "@/components/CountryMapSearch";
 
 type CountryProperties = { name: string };
 type CountryFeature = Feature<Geometry, CountryProperties>;
@@ -154,6 +155,8 @@ const HOVER_FILL = "#b0bcc8";
 const STROKE = "#f4f8fd";
 const MIN_ZOOM = 1;
 const MAX_ZOOM = 8;
+const FOCUS_PADDING = 0.82;
+const FOCUS_DURATION_MS = 700;
 
 function countryId(geo: CountryFeature): string {
   return String(geo.id ?? geo.properties?.name ?? "");
@@ -306,6 +309,74 @@ function constrainMapTransform(
     .scale(scale);
 }
 
+function computeFocusTransform(
+  country: CountryFeature,
+  pathGenerator: ReturnType<typeof geoPath>,
+  viewportWidth: number,
+  viewportHeight: number,
+  currentX: number,
+) {
+  const [[x0, y0], [x1, y1]] = pathGenerator.bounds(country);
+  const cx = (x0 + x1) / 2;
+  const cy = (y0 + y1) / 2;
+  const bw = Math.max(x1 - x0, 4);
+  const bh = Math.max(y1 - y0, 4);
+
+  const k = Math.min(
+    MAX_ZOOM,
+    Math.max(
+      MIN_ZOOM,
+      FOCUS_PADDING * Math.min(viewportWidth / bw, viewportHeight / bh),
+    ),
+  );
+
+  const baseTx = viewportWidth / 2 - k * cx;
+  const ty = viewportHeight / 2 - k * cy;
+
+  const period = viewportWidth * k;
+  const candidates =
+    period > 0
+      ? [baseTx, baseTx + period, baseTx - period]
+      : [baseTx];
+  const tx = candidates.reduce((best, candidate) =>
+    Math.abs(candidate - currentX) < Math.abs(best - currentX)
+      ? candidate
+      : best,
+  );
+
+  return constrainMapTransform(tx, ty, k, viewportWidth, viewportHeight);
+}
+
+function animateMapTransform(
+  svgEl: SVGSVGElement,
+  behavior: ReturnType<typeof zoom<SVGSVGElement, unknown>>,
+  target: ZoomTransform,
+  viewportWidth: number,
+  viewportHeight: number,
+  durationMs: number,
+): () => void {
+  const svg = select(svgEl);
+  const start = zoomTransform(svgEl);
+  const startTime = performance.now();
+  let frameId = 0;
+
+  const step = (now: number) => {
+    const progress = Math.min(1, (now - startTime) / durationMs);
+    const ease = 1 - (1 - progress) ** 3;
+    const x = start.x + (target.x - start.x) * ease;
+    const y = start.y + (target.y - start.y) * ease;
+    const k = start.k + (target.k - start.k) * ease;
+    const next = constrainMapTransform(x, y, k, viewportWidth, viewportHeight);
+    svg.call(behavior.transform, next);
+    if (progress < 1) {
+      frameId = requestAnimationFrame(step);
+    }
+  };
+
+  frameId = requestAnimationFrame(step);
+  return () => cancelAnimationFrame(frameId);
+}
+
 function CountryPaths({
   mapPolygons,
   pathGenerator,
@@ -381,6 +452,7 @@ export function ExploreCountriesMap({ preview = false }: { preview?: boolean } =
   const zoomBehaviorRef = useRef<ReturnType<
     typeof zoom<SVGSVGElement, unknown>
   > | null>(null);
+  const focusAnimationCancelRef = useRef<(() => void) | null>(null);
   const [size, setSize] = useState({ width: 960, height: 520 });
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [hoveredCountryId, setHoveredCountryId] = useState<string | null>(null);
@@ -422,8 +494,10 @@ export function ExploreCountriesMap({ preview = false }: { preview?: boolean } =
     if (!el) return;
 
     const sync = () => {
-      const width = Math.max(280, Math.floor(el.clientWidth));
-      setSize({ width, height: Math.round(width * 0.52) });
+      const { width } = el.getBoundingClientRect();
+      const nextWidth = Math.floor(width);
+      if (nextWidth <= 0) return;
+      setSize({ width: nextWidth, height: Math.round(nextWidth * 0.52) });
     };
 
     sync();
@@ -504,6 +578,58 @@ export function ExploreCountriesMap({ preview = false }: { preview?: boolean } =
     };
   }, [preview, size.height, size.width]);
 
+  useEffect(() => {
+    if (preview) return;
+
+    const svgEl = svgRef.current;
+    const behavior = zoomBehaviorRef.current;
+    if (!svgEl || !behavior) return;
+
+    focusAnimationCancelRef.current?.();
+    focusAnimationCancelRef.current = null;
+
+    const { width, height } = size;
+    const current = zoomTransform(svgEl);
+
+    if (!selectedId) {
+      if (current.k === 1 && current.x === 0 && current.y === 0) return;
+      focusAnimationCancelRef.current = animateMapTransform(
+        svgEl,
+        behavior,
+        zoomIdentity,
+        width,
+        height,
+        FOCUS_DURATION_MS,
+      );
+      return;
+    }
+
+    const country = countries.find((entry) => countryId(entry) === selectedId);
+    if (!country) return;
+
+    const next = computeFocusTransform(
+      country,
+      pathGenerator,
+      width,
+      height,
+      current.x,
+    );
+
+    focusAnimationCancelRef.current = animateMapTransform(
+      svgEl,
+      behavior,
+      next,
+      width,
+      height,
+      FOCUS_DURATION_MS,
+    );
+
+    return () => {
+      focusAnimationCancelRef.current?.();
+      focusAnimationCancelRef.current = null;
+    };
+  }, [selectedId, countries, pathGenerator, preview, size.height, size.width]);
+
   const zoomIn = () => {
     const svgEl = svgRef.current;
     const behavior = zoomBehaviorRef.current;
@@ -561,11 +687,26 @@ export function ExploreCountriesMap({ preview = false }: { preview?: boolean } =
   const hoverFlagWidth = snapFlagcdnWidth(Math.round(320 * zoomLevel));
   const canZoomOut = zoomLevel > MIN_ZOOM + 0.01;
 
+  const handleSelectCountry = (id: string) => {
+    clearHover();
+    setSelectedId((prev) => (prev === id ? null : id));
+  };
+
   return (
     <div className={preview ? undefined : "space-y-4"}>
+      {!preview ? (
+        <CountryMapSearch
+          countries={countries}
+          selectedCountry={selectedCountry}
+          onSelectCountry={(id) => {
+            clearHover();
+            setSelectedId(id);
+          }}
+        />
+      ) : null}
       <div
         ref={containerRef}
-        className={`relative w-full overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm ${preview ? "pointer-events-none" : ""}`}
+        className={`relative aspect-[100/52] w-full overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-sand-muted)] shadow-sm ${preview ? "pointer-events-none" : ""}`}
       >
         {!preview ? (
           <div className="absolute right-3 top-3 z-10 flex flex-col gap-1.5">
@@ -600,9 +741,8 @@ export function ExploreCountriesMap({ preview = false }: { preview?: boolean } =
 
         <svg
           ref={svgRef}
-          width={size.width}
-          height={size.height}
           viewBox={`0 0 ${size.width} ${size.height}`}
+          preserveAspectRatio="xMidYMid slice"
           role="img"
           aria-hidden={preview ? true : undefined}
           aria-label={
@@ -610,11 +750,13 @@ export function ExploreCountriesMap({ preview = false }: { preview?: boolean } =
               ? undefined
               : "Interactive world map. Click a country to select it. Scroll or pinch to zoom, drag to pan."
           }
-          className={`block w-full select-none ${preview ? "" : `touch-none ${isPanning ? "cursor-grabbing" : "cursor-grab"}`}`}
+          className={`block h-full w-full select-none ${preview ? "" : `touch-none ${isPanning ? "cursor-grabbing" : "cursor-grab"}`}`}
         >
           <rect
-            width={size.width}
-            height={size.height}
+            x={-Math.ceil(size.width * 0.015)}
+            y={-Math.ceil(size.height * 0.015)}
+            width={size.width + Math.ceil(size.width * 0.03)}
+            height={size.height + Math.ceil(size.height * 0.03)}
             fill="var(--color-sand-muted)"
           />
           <g ref={mapGroupRef}>
@@ -631,9 +773,7 @@ export function ExploreCountriesMap({ preview = false }: { preview?: boolean } =
                   hoveredPolygonKey={hoveredPolygonKey}
                   keyPrefix={`copy-${copy}`}
                   preview={preview}
-                  onSelect={(id) =>
-                    setSelectedId((prev) => (prev === id ? null : id))
-                  }
+                  onSelect={handleSelectCountry}
                   onHover={handlePolygonHover}
                   onUnhover={clearHover}
                 />

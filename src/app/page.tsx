@@ -60,7 +60,7 @@ export default function Home() {
                 href="/explore-countries"
                 className="mt-8 inline-flex items-center justify-center rounded-full bg-[var(--color-coral)] px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:brightness-105"
               >
-                Explore the map
+                Explore the Map
               </Link>
             </div>
             <HomeExploreCountriesPreview />
