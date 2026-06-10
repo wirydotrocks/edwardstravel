@@ -293,9 +293,10 @@ function wrapPanX(x: number, scale: number, worldWidth: number): number {
   return ((x + period / 2) % period + period) % period - period / 2;
 }
 
-function clampPanY(y: number, scale: number, worldHeight: number): number {
-  const limit = (worldHeight * (scale - 1)) / 2;
-  return Math.max(-limit, Math.min(limit, y));
+function clampPanY(y: number, scale: number, viewportHeight: number): number {
+  if (scale <= 1) return 0;
+  const minY = viewportHeight * (1 - scale);
+  return Math.max(minY, Math.min(0, y));
 }
 
 function constrainMapTransform(
