@@ -3,7 +3,6 @@ import { Suspense } from "react";
 import { RoamChat } from "@/components/RoamChat";
 
 export const metadata: Metadata = {
-  title: "Talk to Roam",
   description:
     "Chat with Roam AI, your Edwards Travel guide—discover countries and things to do on your next trip.",
 };

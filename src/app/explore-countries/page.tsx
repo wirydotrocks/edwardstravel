@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { ExploreCountriesMapClient } from "@/components/ExploreCountriesMapClient";
 
 export const metadata: Metadata = {
-  title: "Explore Countries",
   description:
     "Explore the world country by country on an interactive map with Edwards Travel.",
 };

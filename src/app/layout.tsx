@@ -17,13 +17,17 @@ const fraunces = Fraunces({
 });
 
 export const metadata: Metadata = {
-  title: {
-    default: "Edwards Travel | thoughtfully planned journeys",
-    template: "%s | Edwards Travel",
-  },
+  title: "Edward's Travel",
   description:
-    "Explore the world with Edwards Travel — personalized experiences, destinations, and trip planning.",
+    "Explore the world with Edward's Travel — personalized experiences, destinations, and trip planning.",
   metadataBase: new URL("https://edwardstravel.com"),
+  icons: {
+    icon: [
+      { url: "/favicon.png", type: "image/png" },
+      { url: "/icon.png", type: "image/png", sizes: "32x32" },
+    ],
+    apple: [{ url: "/apple-icon.png", type: "image/png", sizes: "180x180" }],
+  },
 };
 
 export default function RootLayout({

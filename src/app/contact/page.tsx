@@ -4,7 +4,6 @@ import { OfficeLocationsGlob } from "@/components/OfficeLocationsBlock";
 import { ContactForm } from "./ContactForm";
 
 export const metadata: Metadata = {
-  title: "Contact Us",
   description:
     "Contact Edwards Travel — business inquiries, trip planning, or anything else. Reach our Virginia Beach or Las Vegas offices.",
 };

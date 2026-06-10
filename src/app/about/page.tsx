@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { TeamSection } from "@/components/TeamSection";
 
 export const metadata: Metadata = {
-  title: "About us",
   description:
     "Meet the Edwards Travel team — the people behind your thoughtfully planned journeys.",
 };
