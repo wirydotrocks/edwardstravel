@@ -3,18 +3,154 @@
 import { geoNaturalEarth1, geoPath } from "d3-geo";
 import { select } from "d3-selection";
 import { zoom, zoomIdentity } from "d3-zoom";
-import type { Feature, FeatureCollection, Geometry } from "geojson";
+import type { Feature, FeatureCollection, Geometry, Polygon } from "geojson";
 import Link from "next/link";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { feature } from "topojson-client";
 import type { Topology } from "topojson-specification";
 import countries110m from "world-atlas/countries-110m.json";
+import {
+  countryAlpha2,
+  countryFlagUrl,
+  snapFlagcdnWidth,
+} from "@/lib/country-flags";
+import { countryHoverMode } from "@/lib/country-hover-mode";
 
 type CountryProperties = { name: string };
 type CountryFeature = Feature<Geometry, CountryProperties>;
+type PolygonFeature = Feature<Polygon, CountryProperties>;
+
+/** Standard flag width:height (covers most national flags). */
+const FLAG_ASPECT = 3 / 2;
+
+type MapPolygon = {
+  country: CountryFeature;
+  polygonIndex: number;
+  feature: PolygonFeature;
+};
+
+function polygonKey(countryIdValue: string, polygonIndex: number): string {
+  return `${countryIdValue}::${polygonIndex}`;
+}
+
+function explodeCountryPolygons(countries: CountryFeature[]): MapPolygon[] {
+  const polygons: MapPolygon[] = [];
+
+  for (const country of countries) {
+    const { geometry } = country;
+
+    if (geometry.type === "Polygon") {
+      polygons.push({
+        country,
+        polygonIndex: 0,
+        feature: country as PolygonFeature,
+      });
+      continue;
+    }
+
+    if (geometry.type === "MultiPolygon") {
+      geometry.coordinates.forEach((coordinates, polygonIndex) => {
+        polygons.push({
+          country,
+          polygonIndex,
+          feature: {
+            type: "Feature",
+            id: country.id,
+            properties: country.properties,
+            geometry: { type: "Polygon", coordinates },
+          },
+        });
+      });
+      continue;
+    }
+
+    polygons.push({
+      country,
+      polygonIndex: 0,
+      feature: {
+        type: "Feature",
+        id: country.id,
+        properties: country.properties,
+        geometry: { type: "Polygon", coordinates: [] },
+      },
+    });
+  }
+
+  return polygons.filter((entry) => entry.feature.geometry.coordinates.length > 0);
+}
+
+type FlagImageLayout = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  preserveAspectRatio: "none" | "xMidYMid meet";
+};
+
+/** Wide countries (Russia, Chile, …) get a full-width stretch so all stripes stay visible. */
+const WIDE_COUNTRY_ASPECT = FLAG_ASPECT * 1.25;
+
+function flagCoverLayout(
+  pathGenerator: ReturnType<typeof geoPath>,
+  geo: CountryFeature,
+): FlagImageLayout | null {
+  const [[x0, y0], [x1, y1]] = pathGenerator.bounds(geo);
+  const bboxW = x1 - x0;
+  const bboxH = y1 - y0;
+  if (bboxW <= 0 || bboxH <= 0) return null;
+
+  const bboxAspect = bboxW / bboxH;
+
+  if (bboxAspect >= WIDE_COUNTRY_ASPECT) {
+    return {
+      x: x0,
+      y: y0,
+      width: bboxW,
+      height: bboxH,
+      preserveAspectRatio: "none",
+    };
+  }
+
+  const [cx, cy] = pathGenerator.centroid(geo);
+  if (!Number.isFinite(cx) || !Number.isFinite(cy)) return null;
+
+  const halfW = Math.max(cx - x0, x1 - cx);
+  const halfH = Math.max(cy - y0, y1 - cy);
+
+  let imgW = halfW * 2;
+  let imgH = halfH * 2;
+
+  if (imgW / imgH > FLAG_ASPECT) {
+    imgH = imgW / FLAG_ASPECT;
+  } else {
+    imgW = imgH * FLAG_ASPECT;
+  }
+
+  if (imgW < bboxW) {
+    imgW = bboxW;
+    imgH = imgW / FLAG_ASPECT;
+  }
+  if (imgH < bboxH) {
+    imgH = bboxH;
+    imgW = imgH * FLAG_ASPECT;
+  }
+
+  return {
+    x: cx - imgW / 2,
+    y: cy - imgH / 2,
+    width: imgW,
+    height: imgH,
+    preserveAspectRatio: "xMidYMid meet",
+  };
+}
+
+function safeDomId(value: string): string {
+  return value.replace(/[^a-zA-Z0-9_-]/g, "-");
+}
 
 const DEFAULT_FILL = "#c8d1db";
 const SELECTED_FILL = "var(--color-ocean)";
+const HOVER_FILL = "#b0bcc8";
 const STROKE = "#f4f8fd";
 const MIN_ZOOM = 1;
 const MAX_ZOOM = 8;
@@ -29,6 +165,118 @@ function countryName(geo: CountryFeature): string {
 
 const zoomButtonClass =
   "flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--color-border)] bg-white/95 text-lg font-semibold text-[var(--color-ocean-deep)] shadow-sm transition hover:bg-[var(--color-sand)]";
+
+function CountryFlagImage({
+  alpha2,
+  width = 28,
+  className,
+}: {
+  alpha2: string;
+  width?: number;
+  className?: string;
+}) {
+  const height = Math.round(width * 0.75);
+  return (
+    // eslint-disable-next-line @next/next/no-img-element -- external flag CDN, not in next/image config
+    <img
+      src={countryFlagUrl(alpha2, width * 2)}
+      alt=""
+      width={width}
+      height={height}
+      className={`rounded-sm border border-black/10 object-cover shadow-sm ${className ?? ""}`}
+      loading="lazy"
+      decoding="async"
+    />
+  );
+}
+
+function HoveredCountryFlag({
+  geo,
+  pathGenerator,
+  alpha2,
+  copy,
+  polygonKeyValue,
+  flagWidth,
+}: {
+  geo: CountryFeature;
+  pathGenerator: ReturnType<typeof geoPath>;
+  alpha2: string;
+  copy: number;
+  polygonKeyValue: string;
+  flagWidth: number;
+}) {
+  const d = pathGenerator(geo);
+  const layout = flagCoverLayout(pathGenerator, geo);
+  if (!d || !layout) return null;
+
+  const clipId = `hover-flag-clip-${copy}-${safeDomId(polygonKeyValue)}`;
+
+  return (
+    <g pointerEvents="none" aria-hidden>
+      <defs>
+        <clipPath id={clipId}>
+          <path d={d} />
+        </clipPath>
+      </defs>
+      <g clipPath={`url(#${clipId})`}>
+        <image
+          href={countryFlagUrl(alpha2, flagWidth)}
+          x={layout.x}
+          y={layout.y}
+          width={layout.width}
+          height={layout.height}
+          preserveAspectRatio={layout.preserveAspectRatio}
+        />
+      </g>
+    </g>
+  );
+}
+
+/** One flag spanning the full country bounds, clipped to every part (archipelagos, etc.). */
+function HoveredUnitedCountryFlag({
+  country,
+  polygons,
+  pathGenerator,
+  alpha2,
+  copy,
+  flagWidth,
+}: {
+  country: CountryFeature;
+  polygons: MapPolygon[];
+  pathGenerator: ReturnType<typeof geoPath>;
+  alpha2: string;
+  copy: number;
+  flagWidth: number;
+}) {
+  const layout = flagCoverLayout(pathGenerator, country);
+  if (!layout || polygons.length === 0) return null;
+
+  const clipId = `hover-flag-united-${copy}-${safeDomId(countryId(country))}`;
+
+  return (
+    <g pointerEvents="none" aria-hidden>
+      <defs>
+        <clipPath id={clipId}>
+          {polygons.map(({ feature, polygonIndex }) => {
+            const d = pathGenerator(feature);
+            if (!d) return null;
+            return <path key={polygonIndex} d={d} />;
+          })}
+        </clipPath>
+      </defs>
+      <g clipPath={`url(#${clipId})`}>
+        <image
+          href={countryFlagUrl(alpha2, flagWidth)}
+          x={layout.x}
+          y={layout.y}
+          width={layout.width}
+          height={layout.height}
+          preserveAspectRatio={layout.preserveAspectRatio}
+        />
+      </g>
+    </g>
+  );
+}
 
 const MAP_COPIES = [-1, 0, 1] as const;
 
@@ -59,56 +307,66 @@ function constrainMapTransform(
 }
 
 function CountryPaths({
-  countries,
+  mapPolygons,
   pathGenerator,
   selectedId,
-  hoveredId,
+  hoveredCountryId,
+  hoveredPolygonKey,
   keyPrefix,
   onSelect,
   onHover,
   onUnhover,
   preview = false,
 }: {
-  countries: CountryFeature[];
+  mapPolygons: MapPolygon[];
   pathGenerator: ReturnType<typeof geoPath>;
   selectedId: string | null;
-  hoveredId: string | null;
+  hoveredCountryId: string | null;
+  hoveredPolygonKey: string | null;
   keyPrefix: string;
-  onSelect: (id: string) => void;
-  onHover: (id: string) => void;
+  onSelect: (countryIdValue: string) => void;
+  onHover: (country: CountryFeature, polygonKeyValue: string) => void;
   onUnhover: () => void;
   preview?: boolean;
 }) {
   return (
     <>
-      {countries.map((geo) => {
-        const id = countryId(geo);
-        const d = pathGenerator(geo);
+      {mapPolygons.map(({ country, polygonIndex, feature }) => {
+        const id = countryId(country);
+        const partKey = polygonKey(id, polygonIndex);
+        const d = pathGenerator(feature);
         if (!d) return null;
         const isSelected = selectedId === id;
-        const isHovered = hoveredId === id && !isSelected;
+        const hoverMode = countryHoverMode(country);
+        const isHovered =
+          !isSelected &&
+          (hoverMode === "polygon"
+            ? hoveredPolygonKey === partKey
+            : hoveredCountryId === id);
+        const fill = isSelected
+          ? SELECTED_FILL
+          : isHovered
+            ? HOVER_FILL
+            : DEFAULT_FILL;
         return (
           <path
-            key={`${keyPrefix}-${id}`}
+            key={`${keyPrefix}-${partKey}`}
             d={d}
-            fill={isSelected ? SELECTED_FILL : DEFAULT_FILL}
+            fill={fill}
             stroke={STROKE}
             strokeWidth={0.6}
             vectorEffect="non-scaling-stroke"
-            className={
-              preview
-                ? undefined
-                : "cursor-pointer transition-[fill] duration-200"
-            }
-            style={isHovered ? { fill: "#b0bcc8" } : undefined}
+            className={preview ? undefined : "cursor-pointer"}
             onClick={preview ? undefined : () => onSelect(id)}
-            onMouseEnter={preview ? undefined : () => onHover(id)}
+            onMouseEnter={
+              preview ? undefined : () => onHover(country, partKey)
+            }
             onMouseLeave={preview ? undefined : onUnhover}
-            onFocus={preview ? undefined : () => onHover(id)}
+            onFocus={preview ? undefined : () => onHover(country, partKey)}
             onBlur={preview ? undefined : onUnhover}
             tabIndex={preview ? -1 : 0}
             aria-hidden={preview ? true : undefined}
-            aria-label={preview ? undefined : countryName(geo)}
+            aria-label={preview ? undefined : countryName(country)}
           />
         );
       })}
@@ -125,10 +383,26 @@ export function ExploreCountriesMap({ preview = false }: { preview?: boolean } =
   > | null>(null);
   const [size, setSize] = useState({ width: 960, height: 520 });
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [hoveredCountryId, setHoveredCountryId] = useState<string | null>(null);
+  const [hoveredPolygonKey, setHoveredPolygonKey] = useState<string | null>(null);
+
+  const handlePolygonHover = (country: CountryFeature, partKey: string) => {
+    const id = countryId(country);
+    if (countryHoverMode(country) === "polygon") {
+      setHoveredCountryId(null);
+      setHoveredPolygonKey(partKey);
+    } else {
+      setHoveredCountryId(id);
+      setHoveredPolygonKey(null);
+    }
+  };
+
+  const clearHover = () => {
+    setHoveredCountryId(null);
+    setHoveredPolygonKey(null);
+  };
   const [isPanning, setIsPanning] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(MIN_ZOOM);
-
   const countries = useMemo(() => {
     const topo = countries110m as unknown as Topology;
     const collection = feature(
@@ -137,6 +411,11 @@ export function ExploreCountriesMap({ preview = false }: { preview?: boolean } =
     ) as FeatureCollection<Geometry, CountryProperties>;
     return collection.features;
   }, []);
+
+  const mapPolygons = useMemo(
+    () => explodeCountryPolygons(countries),
+    [countries],
+  );
 
   useLayoutEffect(() => {
     const el = containerRef.current;
@@ -251,12 +530,35 @@ export function ExploreCountriesMap({ preview = false }: { preview?: boolean } =
     [countries, selectedId],
   );
 
-  const hoveredCountry = useMemo(
-    () => countries.find((c) => countryId(c) === hoveredId) ?? null,
-    [countries, hoveredId],
-  );
+  const unitedHoverPolygons = useMemo(() => {
+    if (!hoveredCountryId) return [];
+    return mapPolygons.filter(
+      (entry) => countryId(entry.country) === hoveredCountryId,
+    );
+  }, [mapPolygons, hoveredCountryId]);
+
+  const polygonHoverEntry = useMemo(() => {
+    if (!hoveredPolygonKey) return null;
+    return (
+      mapPolygons.find(
+        (entry) =>
+          polygonKey(countryId(entry.country), entry.polygonIndex) ===
+          hoveredPolygonKey,
+      ) ?? null
+    );
+  }, [mapPolygons, hoveredPolygonKey]);
+
+  const hoveredCountry = useMemo(() => {
+    if (hoveredCountryId) {
+      return countries.find((c) => countryId(c) === hoveredCountryId) ?? null;
+    }
+    return polygonHoverEntry?.country ?? null;
+  }, [countries, hoveredCountryId, polygonHoverEntry]);
 
   const labelCountry = selectedCountry ?? hoveredCountry;
+  const labelAlpha2 = labelCountry ? countryAlpha2(labelCountry) : null;
+  const hoveredAlpha2 = hoveredCountry ? countryAlpha2(hoveredCountry) : null;
+  const hoverFlagWidth = snapFlagcdnWidth(Math.round(320 * zoomLevel));
   const canZoomOut = zoomLevel > MIN_ZOOM + 0.01;
 
   return (
@@ -322,18 +624,42 @@ export function ExploreCountriesMap({ preview = false }: { preview?: boolean } =
                 transform={`translate(${copy * size.width}, 0)`}
               >
                 <CountryPaths
-                  countries={countries}
+                  mapPolygons={mapPolygons}
                   pathGenerator={pathGenerator}
                   selectedId={selectedId}
-                  hoveredId={hoveredId}
+                  hoveredCountryId={hoveredCountryId}
+                  hoveredPolygonKey={hoveredPolygonKey}
                   keyPrefix={`copy-${copy}`}
                   preview={preview}
                   onSelect={(id) =>
                     setSelectedId((prev) => (prev === id ? null : id))
                   }
-                  onHover={setHoveredId}
-                  onUnhover={() => setHoveredId(null)}
+                  onHover={handlePolygonHover}
+                  onUnhover={clearHover}
                 />
+                {!preview && hoveredAlpha2 && hoveredCountryId && hoveredCountry ? (
+                  <HoveredUnitedCountryFlag
+                    country={hoveredCountry}
+                    polygons={unitedHoverPolygons}
+                    pathGenerator={pathGenerator}
+                    alpha2={hoveredAlpha2}
+                    copy={copy}
+                    flagWidth={hoverFlagWidth}
+                  />
+                ) : null}
+                {!preview &&
+                hoveredAlpha2 &&
+                hoveredPolygonKey &&
+                polygonHoverEntry ? (
+                  <HoveredCountryFlag
+                    geo={polygonHoverEntry.feature}
+                    pathGenerator={pathGenerator}
+                    alpha2={hoveredAlpha2}
+                    copy={copy}
+                    polygonKeyValue={hoveredPolygonKey}
+                    flagWidth={hoverFlagWidth}
+                  />
+                ) : null}
               </g>
             ))}
           </g>
@@ -344,6 +670,9 @@ export function ExploreCountriesMap({ preview = false }: { preview?: boolean } =
         <div className="flex min-h-[1.5rem] flex-wrap items-center gap-x-3 gap-y-2 text-sm text-[var(--color-muted)]">
           {selectedCountry ? (
             <>
+              {labelAlpha2 ? (
+                <CountryFlagImage alpha2={labelAlpha2} width={32} />
+              ) : null}
               <span className="font-serif text-lg font-semibold leading-none text-[var(--color-ocean-deep)]">
                 {countryName(selectedCountry)}
               </span>
@@ -356,6 +685,9 @@ export function ExploreCountriesMap({ preview = false }: { preview?: boolean } =
             </>
           ) : labelCountry ? (
             <>
+              {labelAlpha2 ? (
+                <CountryFlagImage alpha2={labelAlpha2} width={24} />
+              ) : null}
               <span className="font-medium text-[var(--color-ocean-deep)]">
                 {countryName(labelCountry)}
               </span>
