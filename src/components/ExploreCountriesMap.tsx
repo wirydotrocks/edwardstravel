@@ -29,6 +29,85 @@ function countryName(geo: CountryFeature): string {
 const zoomButtonClass =
   "flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--color-border)] bg-white/95 text-lg font-semibold text-[var(--color-ocean-deep)] shadow-sm transition hover:bg-[var(--color-sand)]";
 
+const MAP_COPIES = [-1, 0, 1] as const;
+
+function wrapPanX(x: number, scale: number, worldWidth: number): number {
+  const period = worldWidth * scale;
+  if (period <= 0) return 0;
+  return ((x + period / 2) % period + period) % period - period / 2;
+}
+
+function clampPanY(y: number, scale: number, worldHeight: number): number {
+  const limit = (worldHeight * (scale - 1)) / 2;
+  return Math.max(-limit, Math.min(limit, y));
+}
+
+function constrainMapTransform(
+  x: number,
+  y: number,
+  scale: number,
+  worldWidth: number,
+  worldHeight: number,
+) {
+  return zoomIdentity
+    .translate(
+      wrapPanX(x, scale, worldWidth),
+      clampPanY(y, scale, worldHeight),
+    )
+    .scale(scale);
+}
+
+function CountryPaths({
+  countries,
+  pathGenerator,
+  selectedId,
+  hoveredId,
+  keyPrefix,
+  onSelect,
+  onHover,
+  onUnhover,
+}: {
+  countries: CountryFeature[];
+  pathGenerator: ReturnType<typeof geoPath>;
+  selectedId: string | null;
+  hoveredId: string | null;
+  keyPrefix: string;
+  onSelect: (id: string) => void;
+  onHover: (id: string) => void;
+  onUnhover: () => void;
+}) {
+  return (
+    <>
+      {countries.map((geo) => {
+        const id = countryId(geo);
+        const d = pathGenerator(geo);
+        if (!d) return null;
+        const isSelected = selectedId === id;
+        const isHovered = hoveredId === id && !isSelected;
+        return (
+          <path
+            key={`${keyPrefix}-${id}`}
+            d={d}
+            fill={isSelected ? SELECTED_FILL : DEFAULT_FILL}
+            stroke={STROKE}
+            strokeWidth={0.6}
+            vectorEffect="non-scaling-stroke"
+            className="cursor-pointer transition-[fill] duration-200"
+            style={isHovered ? { fill: "#b0bcc8" } : undefined}
+            onClick={() => onSelect(id)}
+            onMouseEnter={() => onHover(id)}
+            onMouseLeave={onUnhover}
+            onFocus={() => onHover(id)}
+            onBlur={onUnhover}
+            tabIndex={0}
+            aria-label={countryName(geo)}
+          />
+        );
+      })}
+    </>
+  );
+}
+
 export function ExploreCountriesMap() {
   const containerRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
@@ -85,6 +164,8 @@ export function ExploreCountriesMap() {
 
     const svg = select(svgEl);
     const mapGroup = select(mapGroupEl);
+    const { width, height } = size;
+    let syncingTransform = false;
 
     const behavior = zoom<SVGSVGElement, unknown>()
       .scaleExtent([MIN_ZOOM, MAX_ZOOM])
@@ -99,8 +180,28 @@ export function ExploreCountriesMap() {
       })
       .on("start", () => setIsPanning(true))
       .on("zoom", (event) => {
-        mapGroup.attr("transform", event.transform.toString());
-        setZoomLevel(event.transform.k);
+        if (syncingTransform) return;
+
+        const next = constrainMapTransform(
+          event.transform.x,
+          event.transform.y,
+          event.transform.k,
+          width,
+          height,
+        );
+
+        mapGroup.attr("transform", next.toString());
+        setZoomLevel(next.k);
+
+        const drifted =
+          Math.abs(next.x - event.transform.x) > 0.5 ||
+          Math.abs(next.y - event.transform.y) > 0.5;
+
+        if (drifted) {
+          syncingTransform = true;
+          svg.call(behavior.transform, next);
+          syncingTransform = false;
+        }
       })
       .on("end", () => setIsPanning(false));
 
@@ -198,34 +299,25 @@ export function ExploreCountriesMap() {
             fill="var(--color-sand-muted)"
           />
           <g ref={mapGroupRef}>
-            {countries.map((geo) => {
-              const id = countryId(geo);
-              const d = pathGenerator(geo);
-              if (!d) return null;
-              const isSelected = selectedId === id;
-              const isHovered = hoveredId === id && !isSelected;
-              return (
-                <path
-                  key={id}
-                  d={d}
-                  fill={isSelected ? SELECTED_FILL : DEFAULT_FILL}
-                  stroke={STROKE}
-                  strokeWidth={0.6}
-                  vectorEffect="non-scaling-stroke"
-                  className="cursor-pointer transition-[fill] duration-200"
-                  style={isHovered ? { fill: "#b0bcc8" } : undefined}
-                  onClick={() =>
+            {MAP_COPIES.map((copy) => (
+              <g
+                key={copy}
+                transform={`translate(${copy * size.width}, 0)`}
+              >
+                <CountryPaths
+                  countries={countries}
+                  pathGenerator={pathGenerator}
+                  selectedId={selectedId}
+                  hoveredId={hoveredId}
+                  keyPrefix={`copy-${copy}`}
+                  onSelect={(id) =>
                     setSelectedId((prev) => (prev === id ? null : id))
                   }
-                  onMouseEnter={() => setHoveredId(id)}
-                  onMouseLeave={() => setHoveredId(null)}
-                  onFocus={() => setHoveredId(id)}
-                  onBlur={() => setHoveredId(null)}
-                  tabIndex={0}
-                  aria-label={countryName(geo)}
+                  onHover={setHoveredId}
+                  onUnhover={() => setHoveredId(null)}
                 />
-              );
-            })}
+              </g>
+            ))}
           </g>
         </svg>
       </div>
